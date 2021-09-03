@@ -1,0 +1,57 @@
+name: release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 8
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle-wrapper.properties') }}
+
+      - name: Cache Gradle Caches
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-cache-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-cache
+
+      - name: Get tag version
+        id: get_version
+        uses: battila7/get-version-action@v2
+
+      - name: Publish artifacts to GitHub Packages
+        run: |
+          echo "New version: ${{ steps.get_version.outputs.version-without-v }}"
+          echo "Github username: ${GITHUB_ACTOR}"
+          ./gradlew -Pversion=${{ steps.get_version.outputs.version-without-v }} publish
+        env:
+          PROJECT_URL: ${{ github.event.repository.url }}
+          MAVEN_PUBLISH_URL: https://maven.pkg.github.com/${{ github.repository }}
+          MAVEN_PUBLISH_USERNAME: ${{ github.actor }}
+          MAVEN_PUBLISH_PASSWORD: ${{ github.token }}
+
+      - name: Release with Changelog
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          title: "CargoXML-ONE.Record Converter Library ${{ steps.get_version.outputs.version }}"
+          files: |
+            build/libs/*.jar

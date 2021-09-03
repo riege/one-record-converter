@@ -1,0 +1,18 @@
+.idea/
+.DS_Store
+
+# Gradle
+/.gradle/
+build.properties
+build
+
+# Eclipse specific files/directories
+.classpath
+.project
+.settings
+.settings/
+.metadata
+bin
+dist
+target
+out

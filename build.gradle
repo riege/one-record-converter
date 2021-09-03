@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+group 'com.riege'
+
+repositories {
+    flatDir dirs: "$rootProject.projectDir/lib"
+    mavenCentral()
+//    maven {
+//        name = "Riege GitHubPackages"
+//        url = "https://maven.pkg.github.com/riege/packages"
+//        credentials {
+//            username = project.findProperty("github.packages.access.user") ?: System.getenv("GITHUB_PACKAGES_ACCESS_USER")
+//            password = project.findProperty("github.packages.access.token") ?: System.getenv("GITHUB_PACKAGES_ACCESS_TOKEN")
+//        }
+//    }
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    // one-record-ontologymodel from riege.com is a public GitHub repository
+    // but not published on mavenCentral.
+    // Nevertheless it can be retrieved via https://jitpack.io
+    // See also https://jitpack.io/#riege/one-record-ontologymodel/1.1.0
+    implementation('com.github.riege:one-record-ontologymodel:1.1.0') { transitive = false }
+
+    // cargoxml-jaxb from riege.com cannot be retrieved via https://jitpack.io
+    // because building it requires access to the Cargo-XML Toolkit schema files
+    // which are not included on GitHub and JitPack has not access to them!
+    // So we take it from local "lib" directory.
+    // Note: Package is available at https://github.com/riege/cargoxml-jaxb
+    implementation ":cargoxml-jaxb-8.0:"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation 'com.fasterxml.jackson.core:jackson-core:2.11.4'
+    testImplementation "com.fasterxml.jackson.core:jackson-annotations:2.11.4"
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.11.4'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+}
+
+test {
+    useJUnitPlatform()
+}
