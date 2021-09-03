@@ -34,6 +34,9 @@ dependencies {
     // So we take it from local "lib" directory.
     // Note: Package is available at https://github.com/riege/cargoxml-jaxb
     implementation ":cargoxml-jaxb-8.0:"
+    // JAX-B dependencies for JDK 9+
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+    implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testImplementation 'com.fasterxml.jackson.core:jackson-core:2.11.4'
