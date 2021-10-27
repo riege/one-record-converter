@@ -64,8 +64,13 @@ and it can be also integrated into a Java project as a depencency via https://ji
 
 [gradle](https://gradle.org/):
 
+    repositories {
+      ...
+      maven { url 'https://jitpack.io' }
+    }
+
     dependencies {
-      implementation('com.github.riege:one-record-converter:0.8.0') { transitive = false }
+      implementation 'com.github.riege:one-record-converter:0.9.0'
     }
 
 [maven](https://maven.apache.org):
@@ -73,13 +78,18 @@ and it can be also integrated into a Java project as a depencency via https://ji
     <dependency>
       <groupId>com.github.riege</groupId>
       <artifactId>one-record-converter</artifactId>
-      <version>0.8.0</version>
+      <version>0.9.0</version>
     </dependency>
 
 See https://jitpack.io/#riege/one-record-converter for more details.
 
-
 ### Java version
+**Update for version 0.9 and above**: The one-record-converter published jar includes 
+the required Ontologymodel classes, Cargo-XML JAXB classes as well as 
+`jakarta.xml.bind-api` and `jaxb-impl` classes. 
+
+
+**Only for version 0.8 and older**:
 The converter uses Jakarta XML Binding (JAXB), which was part of 
 the Java Enterprise Edition with Java version 8,
 deprecated in the following Java versions and finally removed in Java 11.
@@ -95,6 +105,6 @@ e.g. for Java EE 8, in use with maven:
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
-      <version>2.3.3</version>
+      <version>2.3.5</version>
       <scope>runtime</scope>
     </dependency>

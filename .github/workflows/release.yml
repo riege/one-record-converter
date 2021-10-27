@@ -5,6 +5,10 @@ on:
     tags:
       - v*
 
+env:
+  GITHUB_PACKAGES_ACCESS_USER: ${{ secrets.GH_PACKAGES_ACCESS_USER }}
+  GITHUB_PACKAGES_ACCESS_TOKEN: ${{ secrets.GH_PACKAGES_ACCESS_TOKEN }}
+
 jobs:
   release:
     runs-on: ubuntu-latest
