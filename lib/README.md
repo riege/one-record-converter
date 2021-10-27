@@ -6,3 +6,5 @@ In build.gradle buildscript it is added via:
         ..
     }
 
+Note: cargoxml-jaxb*.jar **must** be placed here because due to it's nature it is
+not possible to get it from https://jitpack.io 
