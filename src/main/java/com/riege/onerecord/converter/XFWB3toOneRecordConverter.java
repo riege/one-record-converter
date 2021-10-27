@@ -107,7 +107,6 @@ public final class XFWB3toOneRecordConverter {
      * Converter for CargoXML XFWB into a OneRecord (master or direct) Waybill.
      *
      * @param xfwb CargoXML XFWB
-     * @return OneRecord Waybill - Master or Direct Waybill
      */
     public XFWB3toOneRecordConverter(WaybillType xfwb) {
         this.xfwb = xfwb;
@@ -1287,7 +1286,7 @@ public final class XFWB3toOneRecordConverter {
         OtherIdentifier oi = OneRecordTypeConstants.createOtherIdentifier();
         oi.setOtherIdentifierType(regulated.getRegulatedEntityCategory());
         oi.setIdentifier(ci.getCustomsInfoNote());
-        company.getBranch().setOtherIdentifiers(oi);
+        company.getBranch().setOtherIdentifiers(buildSet(oi));
         regulated.setRegulatedEntityIdentifier(company);
         return regulated;
     }
@@ -1420,7 +1419,7 @@ public final class XFWB3toOneRecordConverter {
             OtherIdentifier oi = OneRecordTypeConstants.createOtherIdentifier();
             oi.setOtherIdentifierType(OneRecordTypeConstants.OTHER_IDENTIFIER_FORWARDER_ACCOUNT_NUMBER_AT_CARRIER);
             oi.setIdentifier(value);
-            company.getBranch().setOtherIdentifiers(oi);
+            company.getBranch().setOtherIdentifiers(buildSet(oi));
         }
 
         final Person person = OneRecordTypeConstants.createPerson();
@@ -1471,7 +1470,7 @@ public final class XFWB3toOneRecordConverter {
             if (mail != null) {
                 person.getContact().add(createContact(ContactTypeCode.EMAIL, mail));
             }
-            company.getBranch().setContactPersons(person);
+            company.getBranch().setContactPersons(buildSet(person));
         }
         return company;
     }
