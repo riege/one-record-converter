@@ -208,7 +208,7 @@ public final class XFWB3toOneRecordConverter {
 
         // General Hints()
         addHint("[GENERAL] This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.");
-        addHint("[GENERAL] This converter is based on XFWB3 schema from IATA CargoXML Toolkit 4rd Edition.");
+        addHint("[GENERAL] This converter is based on XFWB3 schema from IATA CargoXML Toolkit 8th Edition.");
         addHint("[GENERAL] This converter is based on ONE RECORD datamodel Ontology 1.1, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-forCOTBendorsement/Data-Model");
         addHint("[GENERAL] Codes and units are applied 1:1 from CargoXML where applicable.");
         addHint("[GENERAL] Line breaks are respected for some fields if provided in XML, e.g. for multi-line goods description or address name/street");
