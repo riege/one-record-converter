@@ -7,11 +7,17 @@ public class ValidationMessage {
     }
 
     private final Severity severity;
-    private final String message;
+    private final String group;
+    private final String detail;
 
     public ValidationMessage(Severity severity, String message) {
+        this(severity, null, message);
+    }
+
+    public ValidationMessage(Severity severity, String group, String detail) {
         this.severity = severity;
-        this.message = message;
+        this.group = group;
+        this.detail = detail;
     }
 
     public Severity getSeverity() {
@@ -34,8 +40,19 @@ public class ValidationMessage {
         return severity == compareTo;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    /**
+     * @Deprecated use {@link #getGroup()} and {@link #getDetail()} instead
+     */
     public String getMessage() {
-        return message;
+        return group == null ? detail : "[" + group + "] " + detail;
     }
 
 }

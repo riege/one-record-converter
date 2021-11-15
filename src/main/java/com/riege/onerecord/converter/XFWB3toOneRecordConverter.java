@@ -99,6 +99,13 @@ import static com.riege.onerecord.converter.XFWB3ParserHelper.value;
  */
 public final class XFWB3toOneRecordConverter {
 
+    public final static String VG_GENERAL = "General";
+    public final static String VG_UNCERTAINTY = "Mapping-Uncertainty";
+    public final static String VG_UNIMPLEMENTED = "Not-Implemented-Yet";
+    public final static String VG_XMLDATAWARNING = "XML-Data-Warning";
+    public final static String VG_XMLDATAERROR = "XML-Data-Error";
+    public final static String VG_INFORMATION = "Info";
+
     private final WaybillType xfwb;
     private final ValidationResult validationResult;
     private final Waybill waybill;
@@ -207,18 +214,17 @@ public final class XFWB3toOneRecordConverter {
         xmlBH = xfwb.getBusinessHeaderDocument();
 
         // General Hints()
-        addHint("[GENERAL] This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.");
-        addHint("[GENERAL] This converter is based on XFWB3 schema from IATA CargoXML Toolkit 8th Edition.");
-        addHint("[GENERAL] This converter is based on ONE RECORD datamodel Ontology 1.1, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-forCOTBendorsement/Data-Model");
-        addHint("[GENERAL] Codes and units are applied 1:1 from CargoXML where applicable.");
-        addHint("[GENERAL] Line breaks are respected for some fields if provided in XML, e.g. for multi-line goods description or address name/street");
-        addHint("[GENERAL] Line breaks are intentionally added in 'goodsDescription' and 'accountingInformation' to preserve and indicate descriptions from more than one field if applicaple from original XML");
-        addHint("[GENERAL] XFWB3 to 1R converter is not mapping all possible data yet and has focus on the use-case 'XFWB message from forwarder to airline'");
+        addHint(VG_GENERAL, "This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.");
+        addHint(VG_GENERAL, "This converter is based on XFWB3 schema from IATA CargoXML Toolkit 8th Edition.");
+        addHint(VG_GENERAL, "This converter is based on ONE RECORD datamodel Ontology 1.1, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-forCOTBendorsement/Data-Model");
+        addHint(VG_GENERAL, "Codes and units are applied 1:1 from CargoXML where applicable.");
+        addHint(VG_GENERAL, "Line breaks are respected for some fields if provided in XML, e.g. for multi-line goods description or address name/street");
+        addHint(VG_GENERAL, "Line breaks are intentionally added in 'goodsDescription' and 'accountingInformation' to preserve and indicate descriptions from more than one field if applicaple from original XML");
+        addHint(VG_GENERAL, "XFWB3 to 1R converter is not mapping all possible data yet and has focus on the use-case 'XFWB message from forwarder to airline'");
 
         if (xmlMC.getApplicableOriginCurrencyExchange() != null && xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode() != null) {
             awbCurrency = value(xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode());
-            addWarning("MAPPING-UNCERTAINTY: "
-                + "Unclear where to put AWB currency (ApplicableOriginCurrencyExchange/SourceCurrencyCode)");
+            addWarning(VG_UNCERTAINTY,  "Unclear where to put AWB currency (ApplicableOriginCurrencyExchange/SourceCurrencyCode)");
         }
 
         /*
@@ -252,16 +258,16 @@ public final class XFWB3toOneRecordConverter {
         convertCIMPSegment29();
     }
 
-    private void addHint(String text) {
-        validationResult.addHint(text);
+    private void addHint(String group, String text) {
+        validationResult.addHint(group, text);
     }
 
-    private void addWarning(String text) {
-        validationResult.addWarning(text);
+    private void addWarning(String group, String text) {
+        validationResult.addWarning(group, text);
     }
 
-    private void addError(String text) {
-        validationResult.addError(text);
+    private void addError(String group, String text) {
+        validationResult.addError(group, text);
     }
 
     // *************************************************************************
@@ -281,15 +287,15 @@ public final class XFWB3toOneRecordConverter {
 
         String xmlAwbNumber = value(xmlBH.getID());
         if (xmlAwbNumber == null) {
-            addError("XML-DATA-ERROR: Missing AWB number, expected in BusinessHeaderDocument/ID");
+            addError(VG_XMLDATAERROR, "Missing AWB number, expected in BusinessHeaderDocument/ID");
         } else if (xmlAwbNumber.length() < 11) {
-            addError("XML-DATA-ERROR: AWB number '" + xmlAwbNumber + "' too short");
+            addError(VG_XMLDATAERROR, "AWB number '" + xmlAwbNumber + "' too short");
         } else if (xmlAwbNumber.length() > 12) {
-            addError("XML-DATA-ERROR: AWB number '" + xmlAwbNumber + "' too long");
+            addError(VG_XMLDATAERROR, "AWB number '" + xmlAwbNumber + "' too long");
         } else if (xmlAwbNumber.length() == 11 && !xmlAwbNumber.matches("[0-9]{11}")) {
-            addError("XML-DATA-ERROR: AWB number '" + xmlAwbNumber + "' not matching expected format");
+            addError(VG_XMLDATAERROR, "AWB number '" + xmlAwbNumber + "' not matching expected format");
         } else if (xmlAwbNumber.length() == 12 && !xmlAwbNumber.matches("[0-9]{3}-[0-9]{8}")) {
-            addError("XML-DATA-ERROR: AWB number '" + xmlAwbNumber + "' not matching expected format");
+            addError(VG_XMLDATAERROR, "AWB number '" + xmlAwbNumber + "' not matching expected format");
         } else {
             waybill.setWaybillPrefix(xmlAwbNumber.substring(0, 3));
             waybill.setWaybillNumber(xmlAwbNumber.substring(xmlAwbNumber.length() - 8));
@@ -309,13 +315,13 @@ public final class XFWB3toOneRecordConverter {
         // totalGrossWeight
         mainShipment.setTotalGrossWeight(value(xmlMC.getIncludedTareGrossWeightMeasure()));
         mainPiece.setGrossWeight(mainShipment.getTotalGrossWeight());
-        addHint("(Total)GrossWeight is mandatory on Shipment and on Piece, value from MasterConsignment/IncludedTareGrossWeightMeasure is used for both");
+        addHint(VG_INFORMATION, "(Total)GrossWeight is mandatory on Shipment and on Piece, value from MasterConsignment/IncludedTareGrossWeightMeasure is used for both");
 
         VolumetricWeight volumetricWeight = OneRecordTypeConstants.createVolumetricWeight();
         volumetricWeight.setChargeableWeight(mainShipment.getTotalGrossWeight());
         mainShipment.setVolumetricWeight(buildSet(volumetricWeight));
         mainPiece.setVolumetricWeight(volumetricWeight);
-        addHint("VolumetricWeight is mandatory on Shipment and on Piece, value from MasterConsignment/IncludedTareGrossWeightMeasure is used for both");
+        addHint(VG_INFORMATION, "VolumetricWeight is mandatory on Shipment and on Piece, value from MasterConsignment/IncludedTareGrossWeightMeasure is used for both");
 
         // totalVolume
         if (xmlMC.getGrossVolumeMeasure() != null) {
@@ -457,7 +463,8 @@ public final class XFWB3toOneRecordConverter {
             value = value(xmlForwarder.getCargoAgentID());
             if (value != null) {
                 if (!value.matches("[0-9]+")) {
-                    addError("XML-DATA-ERROR: FreightForwarderParty/CargoAgentID '" + value + "' not matching expected number format");
+                    addError(VG_XMLDATAERROR,
+                        "FreightForwarderParty/CargoAgentID '" + value + "' not matching expected number format");
                 } else {
                     forwarder.setIataCargoAgentCode(value);
                 }
@@ -465,7 +472,8 @@ public final class XFWB3toOneRecordConverter {
             if (xmlForwarder.getSpecifiedCargoAgentLocation() != null) {
                 value = value(xmlForwarder.getSpecifiedCargoAgentLocation().getID());
                 if (!value.matches("[0-9]+")) {
-                    addError("XML-DATA-ERROR: FreightForwarderParty/SpecifiedCargoAgentLocation/ID '" + value + "' not matching expected number format");
+                    addError(VG_XMLDATAERROR,
+                        "FreightForwarderParty/SpecifiedCargoAgentLocation/ID '" + value + "' not matching expected number format");
                 } else {
                     forwarder.getBranch().setIataCargoAgentLocationIdentifier(value);
                 }
@@ -481,8 +489,8 @@ public final class XFWB3toOneRecordConverter {
         if (isNullOrEmpty(xmlMC.getHandlingSSRInstructions())) {
             return;
         }
-        addWarning("MAPPING-UNCERTAINTY: "
-            + "Unclear where to put HandlingSSRInstructions, using ServiceRequest with code=\""
+        addWarning(VG_UNCERTAINTY,
+            "Unclear where to put HandlingSSRInstructions, using ServiceRequest with code=\""
             + OneRecordTypeConstants.SERVICE_REQUEST_TYPE_SSR
             + "\" as workaround");
         if (mainPiece.getServiceRequest() == null) {
@@ -521,8 +529,8 @@ public final class XFWB3toOneRecordConverter {
                     Company otherPary = convertCompany(party, getCustomsNotesBySubjectCode(xmlRoleCode));
                     mainBooking.getParties().add(createParty(PartyRoleCode.OPI, otherPary));
                 } else {
-                    addWarning("MAPPING-UNCERTAINTY: "
-                        + "Unclear where to put AssociatedParty/RoleCode=" + xmlRoleCode
+                    addWarning(VG_UNCERTAINTY,
+                        "Unclear where to put AssociatedParty/RoleCode=" + xmlRoleCode
                         + ", not adding to result!");
                 }
             }
@@ -562,8 +570,8 @@ public final class XFWB3toOneRecordConverter {
         boolean isNilCustoms   = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
         Insurance insurance = OneRecordTypeConstants.createInsurance();
         if (isNilInsurance) {
-            addWarning("MAPPING-UNCERTAINTY: "
-                    + "Unclear how to handle NilInsuranceValueIndicator, using Insurance#insuranceAmount with Value#unit=\""
+            addWarning(VG_UNCERTAINTY,
+                "Unclear how to handle NilInsuranceValueIndicator, using Insurance#insuranceAmount with Value#unit=\""
                     + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
                     + "\" as workaround");
             Value nil = OneRecordTypeConstants.createValue();
@@ -579,8 +587,8 @@ public final class XFWB3toOneRecordConverter {
             : xmlMC.getDeclaredValueForCarriageAmount().getValue().toString();
         mainPiece.setDeclaredValueForCarriage(buildSet(declaredValueForCarriage));
         if (isNilCarriage) {
-            addWarning("MAPPING-UNCERTAINTY: "
-                + "Unclear how to handle NilCarriageValueIndicator, using Piece#declaredValueForCarriage with \""
+            addWarning(VG_UNCERTAINTY,
+                "Unclear how to handle NilCarriageValueIndicator, using Piece#declaredValueForCarriage with \""
                 + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
                 + "\" as workaround");
         }
@@ -590,8 +598,8 @@ public final class XFWB3toOneRecordConverter {
             : xmlMC.getDeclaredValueForCustomsAmount().getValue().toString();
         mainPiece.setDeclaredValueForCustoms(buildSet(declaredValueForCustoms));
         if (isNilCustoms) {
-            addWarning("MAPPING-UNCERTAINTY: "
-                + "Unclear how to handle NilCustomsValueIndicator, using Piece#declaredValueForCustoms with \""
+            addWarning(VG_UNCERTAINTY,
+                "Unclear how to handle NilCustomsValueIndicator, using Piece#declaredValueForCustoms with \""
                 + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
                 + "\" as workaround");
         }
@@ -606,8 +614,8 @@ public final class XFWB3toOneRecordConverter {
             && xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem() != null
             && xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem().size() > 0;
         if (!hasRateDescriptions) {
-            addError("XML-DATA-ERROR: "
-                + "No rate descriptions detected (ApplicableRating/IncludedMasterConsignmentItem)");
+            addError(VG_XMLDATAERROR,
+                "No rate descriptions detected (ApplicableRating/IncludedMasterConsignmentItem)");
             return;
         }
         // Data which is exclusivly ONLY ONCE in forwarder (X)FWB:
@@ -687,7 +695,8 @@ public final class XFWB3toOneRecordConverter {
                 }
 
                 if (hasElements(mci.getAssociatedUnitLoadTransportEquipment())) {
-                    addWarning("WARNING: Mapping for ApplicableRating/MasterConsignmentItem/AssociatedUnitLoadTransportEquipment is not implemented yet");
+                    addWarning(VG_UNIMPLEMENTED,
+                        "Mapping for ApplicableRating/MasterConsignmentItem/AssociatedUnitLoadTransportEquipment is not implemented yet");
                 }
                 FreightRateServiceChargeType xmlRate = mci.getApplicableFreightRateServiceCharge();
 
@@ -730,8 +739,8 @@ public final class XFWB3toOneRecordConverter {
                             value(mci.getSpecifiedRateCombinationPointLocation().getID())
                         );
                          */
-                        addWarning("XML-DATA-WARNING: "
-                            + "Rate Construction Points (RCP) is considered deprecated as per IATA 1R and not mapped (ApplicableRating/IncludedMasterConsignmentItem/SpecifiedRateCombinationPointLocation)");
+                        addWarning(VG_XMLDATAWARNING,
+                            "Rate Construction Points (RCP) is considered deprecated as per IATA 1R and not mapped (ApplicableRating/IncludedMasterConsignmentItem/SpecifiedRateCombinationPointLocation)");
                         return;
                     }
                     if (xmlRate.getAppliedAmount() != null) {
@@ -786,8 +795,8 @@ public final class XFWB3toOneRecordConverter {
     private void convertCIMPSegment13() {
         boolean othIsPrepaid = false, othIsCollect = false;
         if (isNullOrEmpty(xmlMC.getApplicableLogisticsAllowanceCharge())) {
-            addWarning("XML-DATA-WARNING: "
-                + "No other charges detected (ApplicableLogisticsAllowanceCharge)");
+            addWarning(VG_XMLDATAWARNING,
+                "No other charges detected (ApplicableLogisticsAllowanceCharge)");
             return;
         }
         for (LogisticsAllowanceChargeType xmlLAC : xmlMC.getApplicableLogisticsAllowanceCharge()) {
@@ -812,7 +821,8 @@ public final class XFWB3toOneRecordConverter {
             mainBooking.getPrice().getRatings().add(otherCharge);
         }
         if (othIsPrepaid && othIsCollect) {
-            addError("XML-DATA-ERROR: ApplicableLogisticsAllowanceCharge contains Prepaid and Collect charges - all other charges are required to be of same type");
+            addError(VG_XMLDATAERROR,
+                "ApplicableLogisticsAllowanceCharge contains Prepaid and Collect charges - all other charges are required to be of same type");
             mainShipment.setOtherChargesIndicator("P+C");
         } else if (othIsCollect) {
             mainShipment.setOtherChargesIndicator("C");
@@ -828,17 +838,18 @@ public final class XFWB3toOneRecordConverter {
     // *************************************************************************
     private void convertCIMPSegment14to15ChargeSummary() {
         if (isNullOrEmpty(xmlMC.getApplicableTotalRating())) {
-            addWarning("XML-DATA-WARNING: "
-                + "No (prepaid or collect) charge summary detected (ApplicableTotalRating/ApplicablePrepaidCollectMonetarySummation)");
+            addWarning(VG_XMLDATAWARNING,
+                "No (prepaid or collect) charge summary detected (ApplicableTotalRating/ApplicablePrepaidCollectMonetarySummation)");
             return;
         }
         if (xmlMC.getApplicableTotalRating().size() > 1) {
-            addWarning("WARNING: Mapping only implemented for first ApplicableTotalRating, additional elements are ignored");
+            addWarning(VG_UNIMPLEMENTED,
+                "Mapping only implemented for first ApplicableTotalRating, additional elements are ignored");
         }
         TotalRatingType xmlTR = xmlMC.getApplicableTotalRating().get(0);
         if (isNullOrEmpty(xmlTR.getApplicablePrepaidCollectMonetarySummation())) {
-            addWarning("XML-DATA-WARNING: "
-                + "No (prepaid or collect) charge summary detected (ApplicableTotalRating/ApplicablePrepaidCollectMonetarySummation)");
+            addWarning(VG_XMLDATAWARNING,
+                "No (prepaid or collect) charge summary detected (ApplicableTotalRating/ApplicablePrepaidCollectMonetarySummation)");
             return;
         }
         // TotalRatingType contains 1-2 PrepaidCollectMappings (either Prepaid or Collect)
@@ -875,8 +886,8 @@ public final class XFWB3toOneRecordConverter {
     }
 
     private void addTotalAmountRating(String type, String chargePaymentType, Value value) {
-        addWarning("MAPPING-UNCERTAINTY: "
-            + "Unclear whether and where to put " + type
+        addWarning(VG_UNCERTAINTY,
+            "Unclear whether and where to put " + type
             + ", using Rating with this chargeType='" + type + "'");
         Ratings totalAmount = OneRecordTypeConstants.createRatings();
         totalAmount.setChargeType(type);
@@ -899,10 +910,12 @@ public final class XFWB3toOneRecordConverter {
         if (xmlBH.getSignatoryCarrierAuthentication() != null) {
             CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
             String type = "SignatoryCarrierAuthentication";
-            addWarning("MAPPING-UNCERTAINTY: "
-                + "Unclear which event code to use for " + type + ", using eventCode=\""
-                + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
-                + "\" as workaround");
+            addWarning(VG_UNCERTAINTY,
+                "Unclear which event code to use for "
+                    + type
+                    + ", using eventCode=\""
+                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
+                    + "\" as workaround");
             Event signatureCarrierEvent = OneRecordTypeConstants.createEvent();
             signatureCarrierEvent.setDateTime(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
             signatureCarrierEvent.setEventCode(OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER);
@@ -921,8 +934,8 @@ public final class XFWB3toOneRecordConverter {
             if (xmlBH.getSignatoryConsignorAuthentication() != null) {
                 ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
                 type = "ConsignorAuthenticationType";
-                addWarning("MAPPING-UNCERTAINTY: "
-                    + "Unclear which event code to use for " + type + ", using '"
+                addWarning(VG_UNCERTAINTY,
+                    "Unclear which event code to use for " + type + ", using '"
                     + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR
                     + "' as workaround. Also using event time from "
                     + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
@@ -951,8 +964,8 @@ public final class XFWB3toOneRecordConverter {
         if (isNullOrEmpty(xmlMC.getHandlingOSIInstructions())) {
             return;
         }
-        addWarning("MAPPING-UNCERTAINTY: "
-            + "Unclear where to put HandlingOSIInstructions, using ServiceRequest with code=\""
+        addWarning(VG_UNCERTAINTY,
+            "Unclear where to put HandlingOSIInstructions, using ServiceRequest with code=\""
             + OneRecordTypeConstants.SERVICE_REQUEST_TYPE_OSI
             + "\" as workaround");
         if (mainPiece.getServiceRequest() == null) {
@@ -1017,8 +1030,8 @@ public final class XFWB3toOneRecordConverter {
     // *************************************************************************
     private void convertCIMPSegment21() {
         if (xmlMC.getAssociatedConsignmentCustomsProcedure() != null) {
-            addWarning("MAPPING-UNCERTAINTY: "
-                + "Unclear where to put AssociatedConsignmentCustomsProcedure, using ServiceRequest with code=\""
+            addWarning(VG_UNCERTAINTY,
+                "Unclear where to put AssociatedConsignmentCustomsProcedure, using ServiceRequest with code=\""
                 + OneRecordTypeConstants.SERVICE_REQUEST_TYPE_CUSTOMS_ORIGIN
                 + "\" as workaround");
             if (mainPiece.getServiceRequest() == null) {
@@ -1085,10 +1098,10 @@ public final class XFWB3toOneRecordConverter {
         if (senderAssignedID != null && shippingRef != null) {
             if (senderAssignedID.length() >= shippingRef.length()) {
                 waybill.setOptionalShippingRefNo(senderAssignedID);
-                addHint("BusinessHeaderDocument.SenderAssignedID (=CIMP 20.5.1) got preferred over MasterConsignment.ID as 'longer ID' for 1R.OptionalShippingRefNo");
+                addHint(VG_INFORMATION, "BusinessHeaderDocument.SenderAssignedID (=CIMP 20.5.1) got preferred over MasterConsignment.ID as 'longer ID' for 1R.OptionalShippingRefNo");
             } else {
                 waybill.setOptionalShippingRefNo(shippingRef);
-                addHint("MasterConsignment.ID got preferred over BusinessHeaderDocument.SenderAssignedID (=CIMP 20.5.1) as 'longer ID' for 1R.OptionalShippingRefNo");
+                addHint(VG_INFORMATION, "MasterConsignment.ID got preferred over BusinessHeaderDocument.SenderAssignedID (=CIMP 20.5.1) as 'longer ID' for 1R.OptionalShippingRefNo");
             }
         } else if (senderAssignedID != null) {
             waybill.setOptionalShippingRefNo(senderAssignedID);
@@ -1130,7 +1143,7 @@ public final class XFWB3toOneRecordConverter {
                 // CP = Contact Person
                 // we already added them during address processing!
                 if (!haveCTCP) {
-                    addHint("IncludedCustomsNote 'CT' and 'CP' (Contact Telephone / Contact Person) are added as contact to the applicable company rather converted to a CustomsInfo");
+                    addHint(VG_INFORMATION, "IncludedCustomsNote 'CT' and 'CP' (Contact Telephone / Contact Person) are added as contact to the applicable company rather converted to a CustomsInfo");
                 }
                 haveCTCP = true;
                 continue;
@@ -1138,7 +1151,8 @@ public final class XFWB3toOneRecordConverter {
             if (updateSecurityDeclaration(custInfo, secDec, previousCiSubjectCode)) {
                 haveSecDec = true;
                 // /IE/ISS/RA/00084-01
-                addHint("IncludedCustomsNote '"
+                addHint(VG_INFORMATION,
+                    "IncludedCustomsNote '"
                     + (information == null ? "" : information)
                     + "/"
                     + (subjectCode == null ? "" : subjectCode)
@@ -1411,8 +1425,8 @@ public final class XFWB3toOneRecordConverter {
         }
         if (xmlAccountID != null) {
             String value = value(xmlAccountID);
-            addWarning("MAPPING-UNCERTAINTY: "
-                + "Unclear where to put address-account-number '"
+            addWarning(VG_UNCERTAINTY,
+                "Unclear where to put address-account-number '"
                 + value + "', using OtherIdentifier with type '"
                 + OneRecordTypeConstants.OTHER_IDENTIFIER_FORWARDER_ACCOUNT_NUMBER_AT_CARRIER
                 + "' as workaround");
