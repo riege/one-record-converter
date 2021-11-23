@@ -383,7 +383,9 @@ public final class XFWB3toOneRecordConverter {
             // ModeCode is the same in 1R+XFWB, so we apply 1:1
             // In XFWB, ModeCode="4" means "Air transport"
             // In XFWB, there is also a ltm.getMode() with value "Air transport"
-            tm.setModeCode(ltm.getModeCode().getValue());
+            if (ltm.getModeCode() != null) {
+                tm.setModeCode(ltm.getModeCode().getValue());
+            }
             tm.setModeQualifier(value(ltm.getStageCode()));
             if (ltm.getDepartureEvent() != null) {
                 tm.setDepartureLocation(
