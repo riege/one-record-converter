@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 
 import javax.xml.bind.JAXBException;
 
+import org.iata.cargo.codelists.WaybillTypeCode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,7 @@ public class XFWB3toOneRecordConverterTest {
         System.out.println(result.awb + " JSON=\n" + result.json);
         Assertions.assertTrue(result.json.contains("customsInfoNote\" : \"USCI1234567812345678X7\""));
         Assertions.assertTrue(result.json.contains("Piece#goodsDescription\" : \"CONSOLIDATION\\nAS PER ATTACHED\\nMANIFEST\\nSECURE CARGO\\nNOT RESTRICTED\\nAIRLINE PHARMA\\nSERVICE\""));
+        Assertions.assertEquals(WaybillTypeCode.MASTER.code(), result.converter.getOneRecordResult().getWaybillType());
     }
 
     @Test
@@ -58,6 +60,7 @@ public class XFWB3toOneRecordConverterTest {
         System.out.println(result.awb + " JSON=\n" + result.json);
         Assertions.assertTrue(result.json.contains("customsInfoNote\" : \"USCI1234567812345678X7\""));
         Assertions.assertTrue(result.json.contains("Piece#goodsDescription\" : \"CONSOLIDATION\\nAS PER ATTACHED\\nMANIFEST\\nSECURE CARGO\\nNOT RESTRICTED\\nAIRLINE PHARMA\\nSERVICE\""));
+        Assertions.assertEquals(WaybillTypeCode.DIRECT.code(), result.converter.getOneRecordResult().getWaybillType());
     }
 
     private Result fileProcessingTest(String filename) throws JAXBException, JsonProcessingException {

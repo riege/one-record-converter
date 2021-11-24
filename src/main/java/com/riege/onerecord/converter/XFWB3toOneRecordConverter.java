@@ -60,13 +60,13 @@ import com.riege.cargoxml.schema.xfwb3.DestinationCurrencyExchangeType;
 import com.riege.cargoxml.schema.xfwb3.FreightForwarderAddressType;
 import com.riege.cargoxml.schema.xfwb3.FreightForwarderPartyType;
 import com.riege.cargoxml.schema.xfwb3.FreightRateServiceChargeType;
-import com.riege.cargoxml.schema.xfwb3.HeaderNoteType;
 import com.riege.cargoxml.schema.xfwb3.IDType;
 import com.riege.cargoxml.schema.xfwb3.LogisticsAllowanceChargeType;
 import com.riege.cargoxml.schema.xfwb3.LogisticsPackageType;
 import com.riege.cargoxml.schema.xfwb3.LogisticsTransportMovementType;
 import com.riege.cargoxml.schema.xfwb3.MasterConsignmentItemType;
 import com.riege.cargoxml.schema.xfwb3.MasterConsignmentType;
+import com.riege.cargoxml.schema.xfwb3.MessageHeaderDocumentType;
 import com.riege.cargoxml.schema.xfwb3.OSIInstructionsType;
 import com.riege.cargoxml.schema.xfwb3.PrepaidCollectMonetarySummationType;
 import com.riege.cargoxml.schema.xfwb3.RatingType;
@@ -169,6 +169,7 @@ public final class XFWB3toOneRecordConverter {
     private Piece mainPiece;
 
     // CargoXML shortcuts
+    private MessageHeaderDocumentType xmlMH;
     private MasterConsignmentType xmlMC;
     private BusinessHeaderDocumentType xmlBH;
     private String awbCurrency;
@@ -210,6 +211,7 @@ public final class XFWB3toOneRecordConverter {
         /*
          * initialize some shortcuts to main CargoXML elements
          */
+        xmlMH = xfwb.getMessageHeaderDocument();
         xmlMC = xfwb.getMasterConsignment();
         xmlBH = xfwb.getBusinessHeaderDocument();
 
@@ -275,15 +277,16 @@ public final class XFWB3toOneRecordConverter {
     // *************************************************************************
     private void convertCIMPSegment02() {
         // Determine type of AWB ("Master" or "Direct")
-        boolean isMaster = false;
-        for (HeaderNoteType element : xmlBH.getIncludedHeaderNote()) {
-            if ("C".equals(value(element.getContentCode()))
-                || "Consolidation Shipment".equals(value(element.getContent()))) {
-                isMaster = true;
-                break;
-            }
+        String typeCode = value(xmlMH.getTypeCode());
+        if (typeCode == null) {
+            addError(VG_XMLDATAERROR, "Missing TypeCode in MessageHeaderDocumentType");
+        } else if ("740".equals(typeCode.trim())) {
+            waybill.setWaybillType(WaybillTypeCode.DIRECT.code());
+        } else if ("741".equals(typeCode.trim())) {
+            waybill.setWaybillType(WaybillTypeCode.MASTER.code());
+        } else {
+            addError(VG_XMLDATAERROR, "Unsupported XFWB type code '" + typeCode + "' MessageHeaderDocumentType/TypeCode");
         }
-        waybill.setWaybillType((isMaster ? WaybillTypeCode.MASTER : WaybillTypeCode.DIRECT).code());
 
         String xmlAwbNumber = value(xmlBH.getID());
         if (xmlAwbNumber == null) {

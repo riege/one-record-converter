@@ -3,7 +3,7 @@
     <ns2:MessageHeaderDocument>
         <ID>888-11111111_6c763819-1067-43fe-acf7-db4daf4f77cf</ID>
         <Name>Master Air Waybill</Name>
-        <TypeCode>741</TypeCode>
+        <TypeCode>740</TypeCode>
         <IssueDateTime>2021-03-10T11:00:00+01:00</IssueDateTime>
         <PurposeCode>Creation</PurposeCode>
         <VersionID>3.00</VersionID>
@@ -20,10 +20,6 @@
     <ns2:BusinessHeaderDocument>
         <ID>888-11111111</ID>
         <SenderAssignedID>FRA8117142550</SenderAssignedID>
-        <IncludedHeaderNote>
-            <ContentCode>C</ContentCode>
-            <Content>Consolidation Shipment</Content>
-        </IncludedHeaderNote>
         <SignatoryCarrierAuthentication>
             <ActualDateTime>2021-03-10T00:00:00</ActualDateTime>
             <Signatory>MARK USER</Signatory>

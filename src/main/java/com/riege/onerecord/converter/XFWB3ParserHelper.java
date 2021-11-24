@@ -12,6 +12,7 @@ import com.riege.cargoxml.schema.xfwb3.CodeType;
 import com.riege.cargoxml.schema.xfwb3.CountryIDType;
 import com.riege.cargoxml.schema.xfwb3.CurrencyCodeType;
 import com.riege.cargoxml.schema.xfwb3.DepartureLocationType;
+import com.riege.cargoxml.schema.xfwb3.DocumentCodeType;
 import com.riege.cargoxml.schema.xfwb3.FinalDestinationLocationType;
 import com.riege.cargoxml.schema.xfwb3.IDType;
 import com.riege.cargoxml.schema.xfwb3.ISO3AlphaCurrencyCodeContentType;
@@ -21,6 +22,10 @@ import com.riege.cargoxml.schema.xfwb3.QuantityType;
 import com.riege.cargoxml.schema.xfwb3.TextType;
 
 public class XFWB3ParserHelper {
+
+    public static String value(DocumentCodeType id) {
+        return id != null && id.getValue() != null ? id.getValue() : null;
+    }
 
     public static String value(IDType id) {
         return id != null && id.getValue() != null ? id.getValue() : null;
