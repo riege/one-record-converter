@@ -226,6 +226,7 @@ public final class XFWB3toOneRecordConverter {
 
         if (xmlMC.getApplicableOriginCurrencyExchange() != null && xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode() != null) {
             awbCurrency = value(xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode());
+            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/129
             addWarning(VG_UNCERTAINTY,  "Unclear where to put AWB currency (ApplicableOriginCurrencyExchange/SourceCurrencyCode)");
         }
 
@@ -494,6 +495,7 @@ public final class XFWB3toOneRecordConverter {
         if (isNullOrEmpty(xmlMC.getHandlingSSRInstructions())) {
             return;
         }
+        // filed as https://github.com/IATA-Cargo/ONE-Record/issues/134
         addWarning(VG_UNCERTAINTY,
             "Unclear where to put HandlingSSRInstructions, using ServiceRequest with code=\""
             + OneRecordTypeConstants.SERVICE_REQUEST_TYPE_SSR
@@ -575,6 +577,7 @@ public final class XFWB3toOneRecordConverter {
         boolean isNilCustoms   = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
         Insurance insurance = OneRecordTypeConstants.createInsurance();
         if (isNilInsurance) {
+            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/131
             addWarning(VG_UNCERTAINTY,
                 "Unclear how to handle NilInsuranceValueIndicator, using Insurance#insuranceAmount with Value#unit=\""
                     + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
@@ -592,6 +595,7 @@ public final class XFWB3toOneRecordConverter {
             : xmlMC.getDeclaredValueForCarriageAmount().getValue().toString();
         mainPiece.setDeclaredValueForCarriage(buildSet(declaredValueForCarriage));
         if (isNilCarriage) {
+            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/132
             addWarning(VG_UNCERTAINTY,
                 "Unclear how to handle NilCarriageValueIndicator, using Piece#declaredValueForCarriage with \""
                 + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
@@ -603,6 +607,7 @@ public final class XFWB3toOneRecordConverter {
             : xmlMC.getDeclaredValueForCustomsAmount().getValue().toString();
         mainPiece.setDeclaredValueForCustoms(buildSet(declaredValueForCustoms));
         if (isNilCustoms) {
+            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/132
             addWarning(VG_UNCERTAINTY,
                 "Unclear how to handle NilCustomsValueIndicator, using Piece#declaredValueForCustoms with \""
                 + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
@@ -891,6 +896,7 @@ public final class XFWB3toOneRecordConverter {
     }
 
     private void addTotalAmountRating(String type, String chargePaymentType, Value value) {
+        // filed as https://github.com/IATA-Cargo/ONE-Record/issues/116
         addWarning(VG_UNCERTAINTY,
             "Unclear whether and where to put " + type
             + ", using Rating with this chargeType='" + type + "'");
@@ -913,6 +919,7 @@ public final class XFWB3toOneRecordConverter {
     // *************************************************************************
     private void convertCIMPSegment16to17Signatory() {
         if (xmlBH.getSignatoryCarrierAuthentication() != null) {
+            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/133
             CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
             String type = "SignatoryCarrierAuthentication";
             addWarning(VG_UNCERTAINTY,
@@ -939,6 +946,7 @@ public final class XFWB3toOneRecordConverter {
             if (xmlBH.getSignatoryConsignorAuthentication() != null) {
                 ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
                 type = "ConsignorAuthenticationType";
+                // https://github.com/IATA-Cargo/ONE-Record/issues/133
                 addWarning(VG_UNCERTAINTY,
                     "Unclear which event code to use for " + type + ", using '"
                     + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR
@@ -969,6 +977,7 @@ public final class XFWB3toOneRecordConverter {
         if (isNullOrEmpty(xmlMC.getHandlingOSIInstructions())) {
             return;
         }
+        // filed as https://github.com/IATA-Cargo/ONE-Record/issues/134
         addWarning(VG_UNCERTAINTY,
             "Unclear where to put HandlingOSIInstructions, using ServiceRequest with code=\""
             + OneRecordTypeConstants.SERVICE_REQUEST_TYPE_OSI
@@ -1035,6 +1044,7 @@ public final class XFWB3toOneRecordConverter {
     // *************************************************************************
     private void convertCIMPSegment21() {
         if (xmlMC.getAssociatedConsignmentCustomsProcedure() != null) {
+            // https://github.com/IATA-Cargo/ONE-Record/issues/135
             addWarning(VG_UNCERTAINTY,
                 "Unclear where to put AssociatedConsignmentCustomsProcedure, using ServiceRequest with code=\""
                 + OneRecordTypeConstants.SERVICE_REQUEST_TYPE_CUSTOMS_ORIGIN
@@ -1430,6 +1440,7 @@ public final class XFWB3toOneRecordConverter {
         }
         if (xmlAccountID != null) {
             String value = value(xmlAccountID);
+            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/130
             addWarning(VG_UNCERTAINTY,
                 "Unclear where to put address-account-number '"
                 + value + "', using OtherIdentifier with type '"
