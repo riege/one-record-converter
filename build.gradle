@@ -78,11 +78,15 @@ dependencies {
     // but not published on mavenCentral.
     // Nevertheless it can be retrieved via https://jitpack.io
     // See also https://jitpack.io/#riege/one-record-ontologymodel
-    // jitpack depencecy:
+    // jitpack dependency (version based):
     //     implementation('com.github.riege:one-record-ontologymodel:1.1.2') { transitive = false }
+    // jitpack dependency (commit hash (e.g. daec14a075) based, for unreleased development versions):
+    //     implementation('com.github.riege:one-record-ontologymodel:daec14a075') { transitive = false }
     // github/riege internal dependency:
     //     implementation('com.riege:one-record-ontologymodel:1.1.2') { transitive = false }
-    implementation('com.github.riege:one-record-ontologymodel:1.1.2') { transitive = false }
+
+    implementation('com.github.riege:one-record-ontologymodel:daec14a075') { transitive = false }
+
     // cargoxml-jaxb from riege.com cannot be retrieved via https://jitpack.io
     // because building it requires access to the Cargo-XML Toolkit schema files
     // which are not included on GitHub and JitPack has not access to them!
