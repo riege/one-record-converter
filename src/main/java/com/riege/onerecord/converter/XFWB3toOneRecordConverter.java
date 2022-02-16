@@ -571,46 +571,28 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 11: Charge Declaration (M)
     // *************************************************************************
     private void convertCIMPSegment11() {
-        boolean isNilInsurance = xmlMC.isNilInsuranceValueIndicator() != null && xmlMC.isNilInsuranceValueIndicator();
-        boolean isNilCarriage  = xmlMC.isNilCarriageValueIndicator() != null && xmlMC.isNilCarriageValueIndicator();
-        boolean isNilCustoms   = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
         Insurance insurance = OneRecordTypeConstants.createInsurance();
-        if (isNilInsurance) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/131
-            addWarning(VG_UNCERTAINTY,
-                "Unclear how to handle NilInsuranceValueIndicator, using Insurance#insuranceAmount with Value#unit=\""
-                    + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-                    + "\" as workaround");
-            Value nil = OneRecordTypeConstants.createValue();
-            nil.setUnit(OneRecordTypeConstants.CHARGE_DECLARATION_NVD);
-            insurance.setInsuranceAmount(nil);
-        } else {
+        insurance.setNvdIndicator(xmlMC.isNilInsuranceValueIndicator());
+        boolean isNilInsurance = xmlMC.isNilInsuranceValueIndicator() != null && xmlMC.isNilInsuranceValueIndicator();
+        if (!isNilInsurance) {
             insurance.setInsuranceAmount(value(xmlMC.getInsuranceValueAmount(), awbCurrency));
         }
         mainShipment.setInsurance(insurance);
 
-        String declaredValueForCarriage = isNilCarriage
-            ? OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-            : xmlMC.getDeclaredValueForCarriageAmount().getValue().toString();
-        mainPiece.setDeclaredValueForCarriage(buildSet(declaredValueForCarriage));
-        if (isNilCarriage) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/132
-            addWarning(VG_UNCERTAINTY,
-                "Unclear how to handle NilCarriageValueIndicator, using Piece#declaredValueForCarriage with \""
-                + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-                + "\" as workaround");
+        mainPiece.setNvdForCarriage(xmlMC.isNilCarriageValueIndicator());
+        boolean isNilCarriage = xmlMC.isNilCarriageValueIndicator() != null && xmlMC.isNilCarriageValueIndicator();
+        if (!isNilCarriage) {
+            mainPiece.setDeclaredValueForCarriage(buildSet(
+                xmlMC.getDeclaredValueForCarriageAmount().getValue().toString()
+            ));
         }
 
-        String declaredValueForCustoms = isNilCustoms
-            ? OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-            : xmlMC.getDeclaredValueForCustomsAmount().getValue().toString();
-        mainPiece.setDeclaredValueForCustoms(buildSet(declaredValueForCustoms));
-        if (isNilCustoms) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/132
-            addWarning(VG_UNCERTAINTY,
-                "Unclear how to handle NilCustomsValueIndicator, using Piece#declaredValueForCustoms with \""
-                + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-                + "\" as workaround");
+        mainPiece.setNvdForCustoms(xmlMC.isNilCustomsValueIndicator());
+        boolean isNilCustoms = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
+        if (!isNilCustoms) {
+            mainPiece.setDeclaredValueForCustoms(buildSet(
+                xmlMC.getDeclaredValueForCustomsAmount().getValue().toString()
+            ));
         }
     }
 
