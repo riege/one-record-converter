@@ -58,7 +58,6 @@ public class OneRecordTypeConstants {
     public static final String SERVICE_REQUEST_TYPE_SSR = "SSR";
     public static final String SERVICE_REQUEST_TYPE_OSI = "OSI";
     public static final String SERVICE_REQUEST_TYPE_CUSTOMS_ORIGIN = "COR";
-    public static final String CHARGE_DECLARATION_NVD = "NVD";
 
     /*
      * Other constants to be used for intended mappings:

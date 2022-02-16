@@ -34,6 +34,7 @@ import org.iata.cargo.model.OtherIdentifier;
 import org.iata.cargo.model.Party;
 import org.iata.cargo.model.Person;
 import org.iata.cargo.model.Piece;
+import org.iata.cargo.model.Product;
 import org.iata.cargo.model.Ranges;
 import org.iata.cargo.model.Ratings;
 import org.iata.cargo.model.RegulatedEntity;
@@ -409,7 +410,7 @@ public final class XFWB3toOneRecordConverter {
                     // MovementTimes is not linked in TransportMovement :-/
                     MovementTimes mt = new MovementTimes();
                     mt.setMovementTimestamp(ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().getTime());
-                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULEDDEPARTURE.code());
+                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE.code());
                     // now do nothing with the MovementTimes :-/
                     int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
                     tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
@@ -646,7 +647,9 @@ public final class XFWB3toOneRecordConverter {
                     }
                 }
 
-                mainPiece.setProduct(OneRecordTypeConstants.createProduct());
+                if (mainPiece.getProduct() == null) {
+                    mainPiece.setProduct(buildSet());
+                }
 
                 if (mci.getOriginCountry() != null) {
                     mainPiece.setProductionCountry(
@@ -712,8 +715,9 @@ public final class XFWB3toOneRecordConverter {
                     Ranges rate1R = OneRecordTypeConstants.createRanges();
                     rate1R.setRateClassCode(value(xmlRate.getCategoryCode()));
                     if (xmlRate.getCommodityItemID() != null) {
-                        mainPiece.getProduct().setCommodityItemNumber(
-                            value(xmlRate.getCommodityItemID()));
+                        Product product = OneRecordTypeConstants.createProduct();
+                        product.setCommodityItemNumber(value(xmlRate.getCommodityItemID()));
+                        mainPiece.getProduct().add(product);
                     }
                     if (xmlRate.getAppliedRate() != null) {
                         rate1R.setAmount(xmlRate.getAppliedRate().doubleValue());
@@ -904,7 +908,7 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 17: Carrier's Execution (M)
     // *************************************************************************
     private void convertCIMPSegment16to17Signatory() {
-            CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
+        CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
         if (sigCarrier != null) {
             waybill.setCarrierDeclarationSignature(value(sigCarrier.getSignatory()));
             waybill.setCarrierDeclarationDate(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
@@ -913,7 +917,7 @@ public final class XFWB3toOneRecordConverter {
                 waybill.setCarrierDeclarationPlace(OneRecordTypeConstants.createLocation());
                 waybill.getCarrierDeclarationPlace().setCode(value(location.getName()));
             }
-            }
+        }
         ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
         if (sigConsignor != null) {
             waybill.setConsignorDeclarationSignature(buildSet(value(sigConsignor.getSignatory())));
