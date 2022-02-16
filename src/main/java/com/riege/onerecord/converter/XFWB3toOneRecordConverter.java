@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.iata.cargo.codelists.BillingChargeCode;
 import org.iata.cargo.codelists.ContactTypeCode;
 import org.iata.cargo.codelists.MovementIndicatorCode;
 import org.iata.cargo.codelists.PartyRoleCode;
@@ -696,6 +697,7 @@ public final class XFWB3toOneRecordConverter {
                     if (mainRateDescription == null) {
                         // initialize
                         mainRateDescription = OneRecordTypeConstants.createRatings();
+                        // chargeType is unresticted free text in Ontology 1.2
                         mainRateDescription.setChargeType("Freight");
                         mainRateDescription.setRanges(buildSet());
                         mainBooking.setPrice(OneRecordTypeConstants.createPrice());
@@ -793,11 +795,20 @@ public final class XFWB3toOneRecordConverter {
         }
         for (LogisticsAllowanceChargeType xmlLAC : xmlMC.getApplicableLogisticsAllowanceCharge()) {
             Ratings otherCharge = OneRecordTypeConstants.createRatings();
+            // chargeType is unresticted free text in Ontology 1.2
             otherCharge.setChargeType("Surcharge");
-            otherCharge.setChargeCode(value(xmlLAC.getID()) + value(xmlLAC.getPartyTypeCode()));
-            // Since there is no "due" in Ratings, therefore we
-            // combine the ChargeCode with the "Due" (aka EntitlementCode),
-            // like done in CIMP FWB already
+            // There is no "due" (aka EntitlementCode) in Ratings
+            // #116 https://github.com/IATA-Cargo/ONE-Record/issues/116 for details
+            addWarning(VG_UNCERTAINTY,
+                "Unclear where to put the Entitlement \"" + value(xmlLAC.getPartyTypeCode())
+                    + "\" for OtherCharge=\"" + value(xmlLAC.getID())
+                    + "\", for details see https://github.com/IATA-Cargo/ONE-Record/issues/116"
+                    + " JSON: Ratings#otherChargeCode\" : \"" + value(xmlLAC.getID()) + "\"");
+            // Still missing entitlement. It should be something like this:
+            // otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
+            // otherCharge.setEntitlement(value(xmlLAC.getPartyTypeCode()));
+            otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
+
             otherCharge.setChargePaymentType(buildSet(xmlLAC.isPrepaidIndicator() ? "P" : "C"));
             Value amount = value(xmlLAC.getActualAmount(), awbCurrency);
             otherCharge.setSubTotal(amount.getValue().doubleValue());
@@ -846,46 +857,39 @@ public final class XFWB3toOneRecordConverter {
         }
         // TotalRatingType contains 1-2 PrepaidCollectMappings (either Prepaid or Collect)
         for (PrepaidCollectMonetarySummationType summary : xmlTR.getApplicablePrepaidCollectMonetarySummation()) {
-            String chargePaymentType =  summary.isPrepaidIndicator() ? "P" : "C";
             // in the sequence they appear on the AWB, with the names used in CXML XFWB
             if (summary.getWeightChargeTotalAmount() != null) {
-                mainShipment.setWeightValuationIndicator(chargePaymentType);
+                mainShipment.setWeightValuationIndicator(summary.isPrepaidIndicator() ? "P" : "C");
                 Value value = value(summary.getWeightChargeTotalAmount(), awbCurrency);
-                addTotalAmountRating("WeightChargeTotalAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TOTAL_WEIGHT_CHARGE, summary.isPrepaidIndicator(), value);
             }
             if (summary.getValuationChargeTotalAmount() != null) {
                 Value value = value(summary.getValuationChargeTotalAmount(), awbCurrency);
-                addTotalAmountRating("ValuationChargeTotalAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.VALUATION_CHARGE, summary.isPrepaidIndicator(), value);
             }
             if (summary.getTaxTotalAmount() != null) {
                 Value value = value(summary.getTaxTotalAmount(), awbCurrency);
-                addTotalAmountRating("TaxTotalAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TAXES, summary.isPrepaidIndicator(), value);
             }
             if (summary.getAgentTotalDuePayableAmount() != null) {
                 Value value = value(summary.getAgentTotalDuePayableAmount(), awbCurrency);
-                addTotalAmountRating("AgentTotalDuePayableAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TOTAL_OTHER_CHARGES_DUE_AGENT, summary.isPrepaidIndicator(), value);
             }
             if (summary.getCarrierTotalDuePayableAmount() != null) {
                 Value value = value(summary.getCarrierTotalDuePayableAmount(), awbCurrency);
-                addTotalAmountRating("CarrierTotalDuePayableAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TOTAL_OTHER_CHARGES_DUE_CARRIER, summary.isPrepaidIndicator(), value);
             }
             if (summary.getGrandTotalAmount() != null) {
                 Value value = value(summary.getGrandTotalAmount(), awbCurrency);
-                addTotalAmountRating("GrandTotalAmount (and it's currency)", chargePaymentType, value);
                 mainBooking.getPrice().setGrandTotal(value.getValue());
             }
         }
     }
 
-    private void addTotalAmountRating(String type, String chargePaymentType, Value value) {
-        // filed as https://github.com/IATA-Cargo/ONE-Record/issues/116
-        addWarning(VG_UNCERTAINTY,
-            "Unclear whether and where to put " + type
-            + ", using Rating with this chargeType='" + type + "'");
+    private void addTotalAmountRating(BillingChargeCode type, boolean isPrepaid, Value value) {
         Ratings totalAmount = OneRecordTypeConstants.createRatings();
-        totalAmount.setChargeType(type);
-        // totalAmount.setChargeCode(); - does not apply
-        totalAmount.setChargePaymentType(buildSet(chargePaymentType));
+        totalAmount.setBillingChargeIdentifier(type.code());
+        totalAmount.setChargePaymentType(buildSet(isPrepaid ? "P" : "C"));
         totalAmount.setSubTotal(value.getValue().doubleValue());
         if (value.getUnit() != null) {
             Ranges ranges = OneRecordTypeConstants.createRanges();
