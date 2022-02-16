@@ -226,8 +226,7 @@ public final class XFWB3toOneRecordConverter {
 
         if (xmlMC.getApplicableOriginCurrencyExchange() != null && xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode() != null) {
             awbCurrency = value(xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode());
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/129
-            addWarning(VG_UNCERTAINTY,  "Unclear where to put AWB currency (ApplicableOriginCurrencyExchange/SourceCurrencyCode)");
+            waybill.setOriginCurrency(awbCurrency);
         }
 
         /*
