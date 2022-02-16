@@ -49,6 +49,7 @@ import org.iata.cargo.model.Waybill;
 
 import com.riege.cargoxml.schema.xfwb3.AccountingNoteType;
 import com.riege.cargoxml.schema.xfwb3.AssociatedPartyType;
+import com.riege.cargoxml.schema.xfwb3.AuthenticationLocationType;
 import com.riege.cargoxml.schema.xfwb3.BusinessHeaderDocumentType;
 import com.riege.cargoxml.schema.xfwb3.CarrierAuthenticationType;
 import com.riege.cargoxml.schema.xfwb3.CodeType;
@@ -899,54 +900,19 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 17: Carrier's Execution (M)
     // *************************************************************************
     private void convertCIMPSegment16to17Signatory() {
-        if (xmlBH.getSignatoryCarrierAuthentication() != null) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/133
             CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
-            String type = "SignatoryCarrierAuthentication";
-            addWarning(VG_UNCERTAINTY,
-                "Unclear which event code to use for "
-                    + type
-                    + ", using eventCode=\""
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
-                    + "\" as workaround");
-            Event signatureCarrierEvent = OneRecordTypeConstants.createEvent();
-            signatureCarrierEvent.setDateTime(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
-            signatureCarrierEvent.setEventCode(OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER);
-            if (sigCarrier.getIssueAuthenticationLocation() != null) {
-                signatureCarrierEvent.setLocation(OneRecordTypeConstants.createLocation());
-                signatureCarrierEvent.getLocation().setCode(value(sigCarrier.getIssueAuthenticationLocation().getName()));
+        if (sigCarrier != null) {
+            waybill.setCarrierDeclarationSignature(value(sigCarrier.getSignatory()));
+            waybill.setCarrierDeclarationDate(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
+            AuthenticationLocationType location = sigCarrier.getIssueAuthenticationLocation();
+            if (location != null) {
+                waybill.setCarrierDeclarationPlace(OneRecordTypeConstants.createLocation());
+                waybill.getCarrierDeclarationPlace().setCode(value(location.getName()));
             }
-            Person eventPerson = OneRecordTypeConstants.createPerson();
-            eventPerson.setLastName(value(sigCarrier.getSignatory()));
-            signatureCarrierEvent.setPerformedByPerson(eventPerson);
-            if (waybill.getEvents() == null) {
-                waybill.setEvents(buildSet());
             }
-            waybill.getEvents().add(signatureCarrierEvent);
-
-            if (xmlBH.getSignatoryConsignorAuthentication() != null) {
-                ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
-                type = "ConsignorAuthenticationType";
-                // https://github.com/IATA-Cargo/ONE-Record/issues/133
-                addWarning(VG_UNCERTAINTY,
-                    "Unclear which event code to use for " + type + ", using '"
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR
-                    + "' as workaround. Also using event time from "
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
-                    + " for mandatory event dateTime field of "
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR
-                    + " since the field value is not available in CargoXML.");
-                Event signatureConsignorEvent = OneRecordTypeConstants.createEvent();
-                signatureConsignorEvent.setDateTime(signatureCarrierEvent.getDateTime());
-                signatureConsignorEvent.setEventCode(OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR);
-                eventPerson = OneRecordTypeConstants.createPerson();
-                eventPerson.setLastName(value(sigConsignor.getSignatory()));
-                signatureConsignorEvent.setPerformedByPerson(eventPerson);
-                if (waybill.getEvents() == null) {
-                    waybill.setEvents(buildSet());
-                }
-                waybill.getEvents().add(signatureConsignorEvent);
-            }
+        ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
+        if (sigConsignor != null) {
+            waybill.setConsignorDeclarationSignature(buildSet(value(sigConsignor.getSignatory())));
         }
     }
 
