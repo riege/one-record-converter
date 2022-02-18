@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.iata.cargo.codelists.BillingChargeCode;
 import org.iata.cargo.codelists.ContactTypeCode;
 import org.iata.cargo.codelists.MovementIndicatorCode;
 import org.iata.cargo.codelists.PartyRoleCode;
@@ -33,6 +34,7 @@ import org.iata.cargo.model.OtherIdentifier;
 import org.iata.cargo.model.Party;
 import org.iata.cargo.model.Person;
 import org.iata.cargo.model.Piece;
+import org.iata.cargo.model.Product;
 import org.iata.cargo.model.Ranges;
 import org.iata.cargo.model.Ratings;
 import org.iata.cargo.model.RegulatedEntity;
@@ -49,6 +51,7 @@ import org.iata.cargo.model.Waybill;
 
 import com.riege.cargoxml.schema.xfwb3.AccountingNoteType;
 import com.riege.cargoxml.schema.xfwb3.AssociatedPartyType;
+import com.riege.cargoxml.schema.xfwb3.AuthenticationLocationType;
 import com.riege.cargoxml.schema.xfwb3.BusinessHeaderDocumentType;
 import com.riege.cargoxml.schema.xfwb3.CarrierAuthenticationType;
 import com.riege.cargoxml.schema.xfwb3.CodeType;
@@ -226,8 +229,7 @@ public final class XFWB3toOneRecordConverter {
 
         if (xmlMC.getApplicableOriginCurrencyExchange() != null && xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode() != null) {
             awbCurrency = value(xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode());
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/129
-            addWarning(VG_UNCERTAINTY,  "Unclear where to put AWB currency (ApplicableOriginCurrencyExchange/SourceCurrencyCode)");
+            waybill.setOriginCurrency(awbCurrency);
         }
 
         /*
@@ -408,7 +410,7 @@ public final class XFWB3toOneRecordConverter {
                     // MovementTimes is not linked in TransportMovement :-/
                     MovementTimes mt = new MovementTimes();
                     mt.setMovementTimestamp(ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().getTime());
-                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULEDDEPARTURE.code());
+                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE.code());
                     // now do nothing with the MovementTimes :-/
                     int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
                     tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
@@ -572,46 +574,28 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 11: Charge Declaration (M)
     // *************************************************************************
     private void convertCIMPSegment11() {
-        boolean isNilInsurance = xmlMC.isNilInsuranceValueIndicator() != null && xmlMC.isNilInsuranceValueIndicator();
-        boolean isNilCarriage  = xmlMC.isNilCarriageValueIndicator() != null && xmlMC.isNilCarriageValueIndicator();
-        boolean isNilCustoms   = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
         Insurance insurance = OneRecordTypeConstants.createInsurance();
-        if (isNilInsurance) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/131
-            addWarning(VG_UNCERTAINTY,
-                "Unclear how to handle NilInsuranceValueIndicator, using Insurance#insuranceAmount with Value#unit=\""
-                    + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-                    + "\" as workaround");
-            Value nil = OneRecordTypeConstants.createValue();
-            nil.setUnit(OneRecordTypeConstants.CHARGE_DECLARATION_NVD);
-            insurance.setInsuranceAmount(nil);
-        } else {
+        insurance.setNvdIndicator(xmlMC.isNilInsuranceValueIndicator());
+        boolean isNilInsurance = xmlMC.isNilInsuranceValueIndicator() != null && xmlMC.isNilInsuranceValueIndicator();
+        if (!isNilInsurance) {
             insurance.setInsuranceAmount(value(xmlMC.getInsuranceValueAmount(), awbCurrency));
         }
         mainShipment.setInsurance(insurance);
 
-        String declaredValueForCarriage = isNilCarriage
-            ? OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-            : xmlMC.getDeclaredValueForCarriageAmount().getValue().toString();
-        mainPiece.setDeclaredValueForCarriage(buildSet(declaredValueForCarriage));
-        if (isNilCarriage) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/132
-            addWarning(VG_UNCERTAINTY,
-                "Unclear how to handle NilCarriageValueIndicator, using Piece#declaredValueForCarriage with \""
-                + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-                + "\" as workaround");
+        mainPiece.setNvdForCarriage(xmlMC.isNilCarriageValueIndicator());
+        boolean isNilCarriage = xmlMC.isNilCarriageValueIndicator() != null && xmlMC.isNilCarriageValueIndicator();
+        if (!isNilCarriage) {
+            mainPiece.setDeclaredValueForCarriage(buildSet(
+                xmlMC.getDeclaredValueForCarriageAmount().getValue().toString()
+            ));
         }
 
-        String declaredValueForCustoms = isNilCustoms
-            ? OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-            : xmlMC.getDeclaredValueForCustomsAmount().getValue().toString();
-        mainPiece.setDeclaredValueForCustoms(buildSet(declaredValueForCustoms));
-        if (isNilCustoms) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/132
-            addWarning(VG_UNCERTAINTY,
-                "Unclear how to handle NilCustomsValueIndicator, using Piece#declaredValueForCustoms with \""
-                + OneRecordTypeConstants.CHARGE_DECLARATION_NVD
-                + "\" as workaround");
+        mainPiece.setNvdForCustoms(xmlMC.isNilCustomsValueIndicator());
+        boolean isNilCustoms = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
+        if (!isNilCustoms) {
+            mainPiece.setDeclaredValueForCustoms(buildSet(
+                xmlMC.getDeclaredValueForCustomsAmount().getValue().toString()
+            ));
         }
     }
 
@@ -663,7 +647,9 @@ public final class XFWB3toOneRecordConverter {
                     }
                 }
 
-                mainPiece.setProduct(OneRecordTypeConstants.createProduct());
+                if (mainPiece.getProduct() == null) {
+                    mainPiece.setProduct(buildSet());
+                }
 
                 if (mci.getOriginCountry() != null) {
                     mainPiece.setProductionCountry(
@@ -714,6 +700,7 @@ public final class XFWB3toOneRecordConverter {
                     if (mainRateDescription == null) {
                         // initialize
                         mainRateDescription = OneRecordTypeConstants.createRatings();
+                        // chargeType is unresticted free text in Ontology 1.2
                         mainRateDescription.setChargeType("Freight");
                         mainRateDescription.setRanges(buildSet());
                         mainBooking.setPrice(OneRecordTypeConstants.createPrice());
@@ -728,8 +715,9 @@ public final class XFWB3toOneRecordConverter {
                     Ranges rate1R = OneRecordTypeConstants.createRanges();
                     rate1R.setRateClassCode(value(xmlRate.getCategoryCode()));
                     if (xmlRate.getCommodityItemID() != null) {
-                        mainPiece.getProduct().setCommodityItemNumber(
-                            value(xmlRate.getCommodityItemID()));
+                        Product product = OneRecordTypeConstants.createProduct();
+                        product.setCommodityItemNumber(value(xmlRate.getCommodityItemID()));
+                        mainPiece.getProduct().add(product);
                     }
                     if (xmlRate.getAppliedRate() != null) {
                         rate1R.setAmount(xmlRate.getAppliedRate().doubleValue());
@@ -811,11 +799,20 @@ public final class XFWB3toOneRecordConverter {
         }
         for (LogisticsAllowanceChargeType xmlLAC : xmlMC.getApplicableLogisticsAllowanceCharge()) {
             Ratings otherCharge = OneRecordTypeConstants.createRatings();
+            // chargeType is unresticted free text in Ontology 1.2
             otherCharge.setChargeType("Surcharge");
-            otherCharge.setChargeCode(value(xmlLAC.getID()) + value(xmlLAC.getPartyTypeCode()));
-            // Since there is no "due" in Ratings, therefore we
-            // combine the ChargeCode with the "Due" (aka EntitlementCode),
-            // like done in CIMP FWB already
+            // There is no "due" (aka EntitlementCode) in Ratings
+            // #116 https://github.com/IATA-Cargo/ONE-Record/issues/116 for details
+            addWarning(VG_UNCERTAINTY,
+                "Unclear where to put the Entitlement \"" + value(xmlLAC.getPartyTypeCode())
+                    + "\" for OtherCharge=\"" + value(xmlLAC.getID())
+                    + "\", for details see https://github.com/IATA-Cargo/ONE-Record/issues/116"
+                    + " JSON: Ratings#otherChargeCode\" : \"" + value(xmlLAC.getID()) + "\"");
+            // Still missing entitlement. It should be something like this:
+            // otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
+            // otherCharge.setEntitlement(value(xmlLAC.getPartyTypeCode()));
+            otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
+
             otherCharge.setChargePaymentType(buildSet(xmlLAC.isPrepaidIndicator() ? "P" : "C"));
             Value amount = value(xmlLAC.getActualAmount(), awbCurrency);
             otherCharge.setSubTotal(amount.getValue().doubleValue());
@@ -864,46 +861,39 @@ public final class XFWB3toOneRecordConverter {
         }
         // TotalRatingType contains 1-2 PrepaidCollectMappings (either Prepaid or Collect)
         for (PrepaidCollectMonetarySummationType summary : xmlTR.getApplicablePrepaidCollectMonetarySummation()) {
-            String chargePaymentType =  summary.isPrepaidIndicator() ? "P" : "C";
             // in the sequence they appear on the AWB, with the names used in CXML XFWB
             if (summary.getWeightChargeTotalAmount() != null) {
-                mainShipment.setWeightValuationIndicator(chargePaymentType);
+                mainShipment.setWeightValuationIndicator(summary.isPrepaidIndicator() ? "P" : "C");
                 Value value = value(summary.getWeightChargeTotalAmount(), awbCurrency);
-                addTotalAmountRating("WeightChargeTotalAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TOTAL_WEIGHT_CHARGE, summary.isPrepaidIndicator(), value);
             }
             if (summary.getValuationChargeTotalAmount() != null) {
                 Value value = value(summary.getValuationChargeTotalAmount(), awbCurrency);
-                addTotalAmountRating("ValuationChargeTotalAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.VALUATION_CHARGE, summary.isPrepaidIndicator(), value);
             }
             if (summary.getTaxTotalAmount() != null) {
                 Value value = value(summary.getTaxTotalAmount(), awbCurrency);
-                addTotalAmountRating("TaxTotalAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TAXES, summary.isPrepaidIndicator(), value);
             }
             if (summary.getAgentTotalDuePayableAmount() != null) {
                 Value value = value(summary.getAgentTotalDuePayableAmount(), awbCurrency);
-                addTotalAmountRating("AgentTotalDuePayableAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TOTAL_OTHER_CHARGES_DUE_AGENT, summary.isPrepaidIndicator(), value);
             }
             if (summary.getCarrierTotalDuePayableAmount() != null) {
                 Value value = value(summary.getCarrierTotalDuePayableAmount(), awbCurrency);
-                addTotalAmountRating("CarrierTotalDuePayableAmount", chargePaymentType, value);
+                addTotalAmountRating(BillingChargeCode.TOTAL_OTHER_CHARGES_DUE_CARRIER, summary.isPrepaidIndicator(), value);
             }
             if (summary.getGrandTotalAmount() != null) {
                 Value value = value(summary.getGrandTotalAmount(), awbCurrency);
-                addTotalAmountRating("GrandTotalAmount (and it's currency)", chargePaymentType, value);
                 mainBooking.getPrice().setGrandTotal(value.getValue());
             }
         }
     }
 
-    private void addTotalAmountRating(String type, String chargePaymentType, Value value) {
-        // filed as https://github.com/IATA-Cargo/ONE-Record/issues/116
-        addWarning(VG_UNCERTAINTY,
-            "Unclear whether and where to put " + type
-            + ", using Rating with this chargeType='" + type + "'");
+    private void addTotalAmountRating(BillingChargeCode type, boolean isPrepaid, Value value) {
         Ratings totalAmount = OneRecordTypeConstants.createRatings();
-        totalAmount.setChargeType(type);
-        // totalAmount.setChargeCode(); - does not apply
-        totalAmount.setChargePaymentType(buildSet(chargePaymentType));
+        totalAmount.setBillingChargeIdentifier(type.code());
+        totalAmount.setChargePaymentType(buildSet(isPrepaid ? "P" : "C"));
         totalAmount.setSubTotal(value.getValue().doubleValue());
         if (value.getUnit() != null) {
             Ranges ranges = OneRecordTypeConstants.createRanges();
@@ -918,54 +908,19 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 17: Carrier's Execution (M)
     // *************************************************************************
     private void convertCIMPSegment16to17Signatory() {
-        if (xmlBH.getSignatoryCarrierAuthentication() != null) {
-            // filed as https://github.com/IATA-Cargo/ONE-Record/issues/133
-            CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
-            String type = "SignatoryCarrierAuthentication";
-            addWarning(VG_UNCERTAINTY,
-                "Unclear which event code to use for "
-                    + type
-                    + ", using eventCode=\""
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
-                    + "\" as workaround");
-            Event signatureCarrierEvent = OneRecordTypeConstants.createEvent();
-            signatureCarrierEvent.setDateTime(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
-            signatureCarrierEvent.setEventCode(OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER);
-            if (sigCarrier.getIssueAuthenticationLocation() != null) {
-                signatureCarrierEvent.setLocation(OneRecordTypeConstants.createLocation());
-                signatureCarrierEvent.getLocation().setCode(value(sigCarrier.getIssueAuthenticationLocation().getName()));
+        CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
+        if (sigCarrier != null) {
+            waybill.setCarrierDeclarationSignature(value(sigCarrier.getSignatory()));
+            waybill.setCarrierDeclarationDate(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
+            AuthenticationLocationType location = sigCarrier.getIssueAuthenticationLocation();
+            if (location != null) {
+                waybill.setCarrierDeclarationPlace(OneRecordTypeConstants.createLocation());
+                waybill.getCarrierDeclarationPlace().setCode(value(location.getName()));
             }
-            Person eventPerson = OneRecordTypeConstants.createPerson();
-            eventPerson.setLastName(value(sigCarrier.getSignatory()));
-            signatureCarrierEvent.setPerformedByPerson(eventPerson);
-            if (waybill.getEvents() == null) {
-                waybill.setEvents(buildSet());
-            }
-            waybill.getEvents().add(signatureCarrierEvent);
-
-            if (xmlBH.getSignatoryConsignorAuthentication() != null) {
-                ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
-                type = "ConsignorAuthenticationType";
-                // https://github.com/IATA-Cargo/ONE-Record/issues/133
-                addWarning(VG_UNCERTAINTY,
-                    "Unclear which event code to use for " + type + ", using '"
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR
-                    + "' as workaround. Also using event time from "
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CARRIER
-                    + " for mandatory event dateTime field of "
-                    + OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR
-                    + " since the field value is not available in CargoXML.");
-                Event signatureConsignorEvent = OneRecordTypeConstants.createEvent();
-                signatureConsignorEvent.setDateTime(signatureCarrierEvent.getDateTime());
-                signatureConsignorEvent.setEventCode(OneRecordTypeConstants.EVENTCODE_SIGNATURE_CONSIGNOR);
-                eventPerson = OneRecordTypeConstants.createPerson();
-                eventPerson.setLastName(value(sigConsignor.getSignatory()));
-                signatureConsignorEvent.setPerformedByPerson(eventPerson);
-                if (waybill.getEvents() == null) {
-                    waybill.setEvents(buildSet());
-                }
-                waybill.getEvents().add(signatureConsignorEvent);
-            }
+        }
+        ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
+        if (sigConsignor != null) {
+            waybill.setConsignorDeclarationSignature(buildSet(value(sigConsignor.getSignatory())));
         }
     }
 
