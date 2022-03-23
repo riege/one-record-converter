@@ -1,6 +1,15 @@
 # Cargo-XML XFWB to ONE Record Converter
 Note: A live demo of this converter is available at https://onerecord.riege.com/
 
+## Release versioning and IATA Ontology versions
+
+The IATA Ontology version is reflected by the version of the Riege [one-record-ontologymodel library](https://github.com/riege/one-record-ontologymodel).
+
+Versions of the converter library:
+* 0.9.x / `branch_0.9`: based upon IATA Ontology 1.1, the ONE Record datamodel as per June 2021, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-COTB-endorsed.
+  Uses one-record-ontologymodel version 1.1.x
+* current development / `main`: based on IATA ONE Record datamodel working draft, see https://github.com/IATA-Cargo/ONE-Record/tree/master/working_draft/ontology
+
 ## General Backgound Information
 This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.
 
@@ -20,8 +29,6 @@ The converter is based on two main data structures to convert from Cargo-XML to 
   (see https://github.com/IATA-Cargo/one-record-server-java/tree/master/src/main/generated-sources/org/iata/cargo).
   These classes have been updated with recently IATA endorsed Ontology via the project 
   https://github.com/riege/one-record-ontologymodel which is used by this converter.
-
-This converter is based on ONE Record datamodel as per June 2021, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-COTB-endorsed
 
 Codes and units are copied 1:1 from the provided Cargo-XML message where applicable.
 
