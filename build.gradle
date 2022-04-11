@@ -7,6 +7,8 @@ plugins {
 /*
  * Gets the version name from the latest Git tag, omit leading "v" - yeah!
  * Note: a plugin way to do this would be via https://plugins.gradle.org/plugin/net.nemerosa.versioning
+ * cmdlin:
+ *     git describe --tags
  */
 def getVersionName = { ->
     def stdout = new ByteArrayOutputStream()
@@ -78,6 +80,10 @@ dependencies {
     // but not published on mavenCentral.
     // Nevertheless it can be retrieved via https://jitpack.io
     // See also https://jitpack.io/#riege/one-record-ontologymodel
+    //
+    // One can also find current versions under the "Commit" tab from above URL!
+    // -> get the "version id" from jitpack, replace dependency, done.
+    //
     // jitpack dependency (version based):
     //     implementation('com.github.riege:one-record-ontologymodel:1.1.2') { transitive = false }
     // jitpack dependency (commit hash (e.g. daec14a075) based, for unreleased development versions):
@@ -85,7 +91,7 @@ dependencies {
     // github/riege internal dependency:
     //     implementation('com.riege:one-record-ontologymodel:1.1.2') { transitive = false }
 
-    implementation('com.github.riege:one-record-ontologymodel:daec14a075') { transitive = false }
+    implementation('com.github.riege:one-record-ontologymodel:06f47fc672') { transitive = false }
 
     // cargoxml-jaxb from riege.com cannot be retrieved via https://jitpack.io
     // because building it requires access to the Cargo-XML Toolkit schema files

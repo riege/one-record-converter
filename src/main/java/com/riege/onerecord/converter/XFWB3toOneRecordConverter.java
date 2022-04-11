@@ -198,7 +198,6 @@ public final class XFWB3toOneRecordConverter {
         // NOTE: v1.1 is the last version which uses TransportSegment
         //       will be replaced by TransportMovement in future versions
         mainTransportSegment = OneRecordTypeConstants.createTransportSegment();
-        mainTransportSegment.setMovementType(OneRecordTypeConstants.MOVEMENT_TYPE_PLANNED);
         mainBooking.setTransportMovement(buildSet(mainTransportSegment));
 
         mainShipment = OneRecordTypeConstants.createShipment();
@@ -632,6 +631,7 @@ public final class XFWB3toOneRecordConverter {
         List<Item> allDims = new ArrayList<>();
         List<ULD> allULD = new ArrayList<>();
         Ratings mainRateDescription = null;
+        BigDecimal mainRateQuantity = BigDecimal.ZERO;
         for (RatingType rt : xmlMC.getApplicableRating()) {
             for (MasterConsignmentItemType mci : rt.getIncludedMasterConsignmentItem()) {
                 for (CodeType codeType : mci.getTypeCode()) {
@@ -725,8 +725,15 @@ public final class XFWB3toOneRecordConverter {
 
                     if (xmlRate.getChargeableWeightMeasure() != null) {
                         rate1R.setUnitBasis(unitCode(xmlRate.getChargeableWeightMeasure()));  // wie in Shipment
-                        rate1R.setMaximumQuantity(bigDecimal(xmlRate.getChargeableWeightMeasure()).doubleValue());
-                        rate1R.setMinimumQuantity(rate1R.getMaximumQuantity());
+                        BigDecimal chargableWeight = bigDecimal(xmlRate.getChargeableWeightMeasure());
+                        /*
+                         * Ontology 2022-May: we no longer use rate1R.setMax/Min
+                         *                    but we use quantity on mainRate!
+                         */
+                        // rate1R.setMaximumQuantity(chargableWeight.doubleValue());
+                        // rate1R.setMinimumQuantity(rate1R.getMaximumQuantity());
+                        mainRateQuantity = mainRateQuantity.add(chargableWeight);
+                        mainRateDescription.setQuantity(mainRateQuantity.toString());
                     }
                     if (mci.getSpecifiedRateCombinationPointLocation() != null) {
                         // IATA considers RCP as deprecated field
@@ -797,23 +804,22 @@ public final class XFWB3toOneRecordConverter {
                 "No other charges detected (ApplicableLogisticsAllowanceCharge)");
             return;
         }
+        if (!xmlMC.getApplicableLogisticsAllowanceCharge().isEmpty()) {
+            addWarning(VG_INFORMATION,
+                "For other charges determined from \"<ApplicableLogisticsAllowanceCharge>\", "
+                    + "we apply a 1R charge type value \"Surcharge\"");
+        }
         for (LogisticsAllowanceChargeType xmlLAC : xmlMC.getApplicableLogisticsAllowanceCharge()) {
             Ratings otherCharge = OneRecordTypeConstants.createRatings();
             // chargeType is unresticted free text in Ontology 1.2
             otherCharge.setChargeType("Surcharge");
-            // There is no "due" (aka EntitlementCode) in Ratings
-            // #116 https://github.com/IATA-Cargo/ONE-Record/issues/116 for details
-            addWarning(VG_UNCERTAINTY,
-                "Unclear where to put the Entitlement \"" + value(xmlLAC.getPartyTypeCode())
-                    + "\" for OtherCharge=\"" + value(xmlLAC.getID())
-                    + "\", for details see https://github.com/IATA-Cargo/ONE-Record/issues/116"
-                    + " JSON: Ratings#otherChargeCode\" : \"" + value(xmlLAC.getID()) + "\"");
             // Still missing entitlement. It should be something like this:
-            // otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
-            // otherCharge.setEntitlement(value(xmlLAC.getPartyTypeCode()));
             otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
-
+            // "due" (aka Entitlement) in Ratings as per
+            // #116 https://github.com/IATA-Cargo/ONE-Record/issues/116
+            otherCharge.setEntitlement(value(xmlLAC.getPartyTypeCode()));
             otherCharge.setChargePaymentType(buildSet(xmlLAC.isPrepaidIndicator() ? "P" : "C"));
+
             Value amount = value(xmlLAC.getActualAmount(), awbCurrency);
             otherCharge.setSubTotal(amount.getValue().doubleValue());
             if (amount.getUnit() != null) {
