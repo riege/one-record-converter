@@ -283,9 +283,9 @@ public final class XFWB3toOneRecordConverter {
         if (typeCode == null) {
             addError(VG_XMLDATAERROR, "Missing TypeCode in MessageHeaderDocumentType");
         } else if ("740".equals(typeCode.trim())) {
-            waybill.setWaybillType(WaybillTypeCode.DIRECT.code());
+            waybill.setWaybillType(WaybillTypeCode.DIRECT);
         } else if ("741".equals(typeCode.trim())) {
-            waybill.setWaybillType(WaybillTypeCode.MASTER.code());
+            waybill.setWaybillType(WaybillTypeCode.MASTER);
         } else {
             addError(VG_XMLDATAERROR, "Unsupported XFWB type code '" + typeCode + "' MessageHeaderDocumentType/TypeCode");
         }
@@ -409,7 +409,7 @@ public final class XFWB3toOneRecordConverter {
                     // MovementTimes is not linked in TransportMovement :-/
                     MovementTimes mt = new MovementTimes();
                     mt.setMovementTimestamp(ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().getTime());
-                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE.code());
+                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE);
                     // now do nothing with the MovementTimes :-/
                     int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
                     tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
@@ -898,7 +898,7 @@ public final class XFWB3toOneRecordConverter {
 
     private void addTotalAmountRating(BillingChargeCode type, boolean isPrepaid, Value value) {
         Ratings totalAmount = OneRecordTypeConstants.createRatings();
-        totalAmount.setBillingChargeIdentifier(type.code());
+        totalAmount.setBillingChargeIdentifier(type);
         totalAmount.setChargePaymentType(buildSet(isPrepaid ? "P" : "C"));
         totalAmount.setSubTotal(value.getValue().doubleValue());
         if (value.getUnit() != null) {
@@ -1285,7 +1285,7 @@ public final class XFWB3toOneRecordConverter {
 
     private Party createParty(PartyRoleCode partyRole, Company company) {
         Party party = OneRecordTypeConstants.createParty();
-        party.setPartyRole(partyRole.code());
+        party.setPartyRole(partyRole);
         party.setPartyDetails(company);
         return party;
     }
@@ -1378,7 +1378,7 @@ public final class XFWB3toOneRecordConverter {
 
     private Contact createContact(ContactTypeCode type, String value) {
         Contact contact = OneRecordTypeConstants.createContact();
-        contact.setContactType(type.code());
+        contact.setContactType(type);
         contact.setContactValue(value);
         return contact;
     }
