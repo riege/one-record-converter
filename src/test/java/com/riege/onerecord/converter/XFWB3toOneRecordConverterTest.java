@@ -23,7 +23,7 @@ public class XFWB3toOneRecordConverterTest {
         Result result =
             fileProcessingTest("888-11111111_XFWB.xml");
         Assertions.assertNotNull(result.converter.getValidationWarnings());
-        Assertions.assertFalse(result.converter.getValidationWarnings().isEmpty());
+        Assertions.assertTrue(result.converter.getValidationWarnings().isEmpty());
         for (ValidationMessage msg : result.converter.getValidationWarnings()) {
             System.out.println(result.awb + " WARNING: " + msg.getMessage());
         }
@@ -35,7 +35,7 @@ public class XFWB3toOneRecordConverterTest {
         }
 
         System.out.println(result.awb + " JSON=\n" + result.json);
-        Assertions.assertTrue(result.json.contains("customsInfoNote\" : \"USCI1234567812345678X7\""));
+        Assertions.assertTrue(result.json.contains("customsInformation\" : \"USCI1234567812345678X7\""));
         Assertions.assertTrue(result.json.contains("Piece#goodsDescription\" : \"CONSOLIDATION\\nAS PER ATTACHED\\nMANIFEST\\nSECURE CARGO\\nNOT RESTRICTED\\nAIRLINE PHARMA\\nSERVICE\""));
         Assertions.assertEquals(WaybillTypeCode.MASTER.code(), result.converter.getOneRecordResult().getWaybillType());
     }
@@ -46,7 +46,7 @@ public class XFWB3toOneRecordConverterTest {
             fileProcessingTest("888-11111111_XFWB_noModeCode.xml");
 
         Assertions.assertNotNull(result.converter.getValidationWarnings());
-        Assertions.assertFalse(result.converter.getValidationWarnings().isEmpty());
+        Assertions.assertTrue(result.converter.getValidationWarnings().isEmpty());
         for (ValidationMessage msg : result.converter.getValidationWarnings()) {
             System.out.println(result.awb + " WARNING: " + msg.getMessage());
         }
@@ -58,7 +58,7 @@ public class XFWB3toOneRecordConverterTest {
         }
 
         System.out.println(result.awb + " JSON=\n" + result.json);
-        Assertions.assertTrue(result.json.contains("customsInfoNote\" : \"USCI1234567812345678X7\""));
+        Assertions.assertTrue(result.json.contains("customsInformation\" : \"USCI1234567812345678X7\""));
         Assertions.assertTrue(result.json.contains("Piece#goodsDescription\" : \"CONSOLIDATION\\nAS PER ATTACHED\\nMANIFEST\\nSECURE CARGO\\nNOT RESTRICTED\\nAIRLINE PHARMA\\nSERVICE\""));
         Assertions.assertEquals(WaybillTypeCode.DIRECT.code(), result.converter.getOneRecordResult().getWaybillType());
     }

@@ -24,6 +24,7 @@ import org.iata.cargo.model.Country;
 import org.iata.cargo.model.CustomsInfo;
 import org.iata.cargo.model.Dimensions;
 import org.iata.cargo.model.Event;
+import org.iata.cargo.model.HandlingInstructions;
 import org.iata.cargo.model.Insurance;
 import org.iata.cargo.model.Item;
 import org.iata.cargo.model.Location;
@@ -50,19 +51,6 @@ import org.iata.cargo.model.VolumetricWeight;
 import org.iata.cargo.model.Waybill;
 
 public class OneRecordTypeConstants {
-
-    /*
-     * Some constants to be used for 1R unclear mappings:
-     */
-    public static final String OTHER_IDENTIFIER_FORWARDER_ACCOUNT_NUMBER_AT_CARRIER = "carrier-account-number";
-    public static final String SERVICE_REQUEST_TYPE_SSR = "SSR";
-    public static final String SERVICE_REQUEST_TYPE_OSI = "OSI";
-    public static final String SERVICE_REQUEST_TYPE_CUSTOMS_ORIGIN = "COR";
-
-    /*
-     * Other constants to be used for intended mappings:
-     */
-    public static final String MOVEMENT_TYPE_PLANNED = "Planned";
 
     public static final Value createValue() {
         Value model = new Value();
@@ -265,6 +253,12 @@ public class OneRecordTypeConstants {
     public static final RegulatedEntity createRegulatedEntity() {
         RegulatedEntity model = new RegulatedEntity();
         model.setTypes(buildTypeset(Vocabulary.s_c_RegulatedEntity));
+        return model;
+    }
+
+    public static HandlingInstructions createHandlingInstructions() {
+        HandlingInstructions model = new HandlingInstructions();
+        model.setTypes(buildTypeset(Vocabulary.s_c_HandlingInstructions));
         return model;
     }
 
