@@ -397,6 +397,9 @@ public final class XFWB3toOneRecordConverter {
                 tm.setModeCode(ltm.getModeCode().getValue());
             }
             tm.setModeQualifier(value(ltm.getStageCode()));
+            if (ltm.getUsedLogisticsTransportMeans() != null) {
+                tm.setCompanyIdentifier(value(ltm.getUsedLogisticsTransportMeans().getName()));
+            }
             if (ltm.getDepartureEvent() != null) {
                 tm.setDepartureLocation(
                     value(ltm.getDepartureEvent().getOccurrenceDepartureLocation()));
@@ -410,6 +413,7 @@ public final class XFWB3toOneRecordConverter {
                     mt.setMovementTimestamp(ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().getTime());
                     mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE);
                     // now do nothing with the MovementTimes :-/
+                    // TODO: Fix this in Ontology
                     int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
                     tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
                 }
