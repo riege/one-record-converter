@@ -169,12 +169,6 @@ AIRPORT ROAD</StreetName>
             <CountryID>IE</CountryID>
         </IncludedCustomsNote>
         <IncludedCustomsNote>
-            <ContentCode>CT</ContentCode>
-            <Content>353123454321</Content>
-            <SubjectCode>SHP</SubjectCode>
-            <CountryID>IE</CountryID>
-        </IncludedCustomsNote>
-        <IncludedCustomsNote>
             <ContentCode>T</ContentCode>
             <Content>USCI1234567812345678X7</Content>
             <SubjectCode>CNE</SubjectCode>
@@ -201,6 +195,14 @@ AIRPORT ROAD</StreetName>
         <IncludedCustomsNote>
             <ContentCode>ED</ContentCode>
             <Content>1299</Content>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>SN</ContentCode>
+            <Content>MR. SECURITY OFFICER</Content>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>SD</ContentCode>
+            <Content>13APR211147</Content>
         </IncludedCustomsNote>
         <AssociatedConsignmentCustomsProcedure>
             <GoodsStatusCode>X</GoodsStatusCode>
