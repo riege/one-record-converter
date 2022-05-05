@@ -236,6 +236,11 @@ public final class XFWB3toOneRecordConverter {
          * CargoXML elements which have no CIMP mapping should get mapped
          * in the CIMP segment which matches best topic-wise.
          */
+        /*
+         * CIMPSegment27 is converted at the beginning because it might generate a hint
+         * which makes sence to put as the first Hint in the validation result list.
+         */
+        convertCIMPSegment27();
         convertCIMPSegment02();
         convertCIMPSegment03to04Flights();
         convertCIMPSegment05();
@@ -257,7 +262,6 @@ public final class XFWB3toOneRecordConverter {
         convertCIMPSegment23();
         convertCIMPSegment24();
         convertCIMPSegment25();
-        convertCIMPSegment27();
         convertCIMPSegment29();
     }
 
@@ -412,10 +416,12 @@ public final class XFWB3toOneRecordConverter {
                     MovementTimes mt = new MovementTimes();
                     mt.setMovementTimestamp(ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().getTime());
                     mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE);
-                    // now do nothing with the MovementTimes :-/
-                    // TODO: Fix this in Ontology
-                    int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
-                    tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
+                    // Ontology v1.1:
+                    //int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
+                    //tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
+                    // Ontology v1.2:
+                    tm.setTransportIdentifier(value(ltm.getID()));
+                    tm.setMovementTimes(buildSet(mt));
                 }
             }
 
@@ -1197,7 +1203,7 @@ public final class XFWB3toOneRecordConverter {
         if ("ED".equals(ci.getCustomsInfoContentCode())) {
             // map expiry to a previous(!!) IncludedCustomsNote that matches
             try {
-                int i = Integer.parseInt(ci.getCustomsInfoNote());
+                int i = Integer.parseInt(ci.getCustomsInformation());
                 int month = i / 100;
                 Calendar cal = Calendar.getInstance();
                 // ensure calculation to longer than the year 2100 ;-)
@@ -1217,7 +1223,7 @@ public final class XFWB3toOneRecordConverter {
             if (secDec.getGroundsForExemption() == null) {
                 secDec.setGroundsForExemption(buildSet());
             }
-            secDec.getGroundsForExemption().add(ci.getCustomsInfoNote());
+            secDec.getGroundsForExemption().add(ci.getCustomsInformation());
             return true;
         }
         if ("SM".equals(ci.getCustomsInfoContentCode())) {
@@ -1225,14 +1231,14 @@ public final class XFWB3toOneRecordConverter {
             if (secDec.getScreeningMethod() == null) {
                 secDec.setScreeningMethod(buildSet());
             }
-            secDec.getScreeningMethod().add(ci.getCustomsInfoNote());
+            secDec.getScreeningMethod().add(ci.getCustomsInformation());
             return true;
         }
         // the following checks apply independent from followin ISS or OSS or AC:
         if ("SN".equals(ci.getCustomsInfoContentCode())) {
         // operator issuing the security status
             secDec.setIssuedBy(OneRecordTypeConstants.createPerson());
-            secDec.getIssuedBy().setLastName(ci.getCustomsInfoNote());
+            secDec.getIssuedBy().setLastName(ci.getCustomsInformation());
             return true;
         }
         // SD is an alphanumeric entry identifying the exact date and time when the security status was issued by the Regulated Agent
@@ -1240,7 +1246,7 @@ public final class XFWB3toOneRecordConverter {
         if ("SD".equals(ci.getCustomsInfoContentCode())) {
             DateFormat df = new SimpleDateFormat("ddMMMyyHHmm", Locale.US);
             try {
-                Date date = df.parse(ci.getCustomsInfoNote());
+                Date date = df.parse(ci.getCustomsInformation());
                 secDec.setIssuedOn(date);
                 return true;
             } catch (ParseException e) {
@@ -1248,15 +1254,15 @@ public final class XFWB3toOneRecordConverter {
             }
         }
         if ("SS".equals(ci.getCustomsInfoContentCode())) {
-            secDec.setSecurityStatus(ci.getCustomsInfoNote());
+            secDec.setSecurityStatus(ci.getCustomsInformation());
             return true;
         }
         if ("ST".equals(ci.getCustomsInfoContentCode())) {
             if (secDec.getAdditionalSecurityInformation() == null) {
-                secDec.setAdditionalSecurityInformation(ci.getCustomsInfoNote());
+                secDec.setAdditionalSecurityInformation(ci.getCustomsInformation());
             } else {
                 secDec.setAdditionalSecurityInformation(
-                    secDec.getAdditionalSecurityInformation() + "\n" + ci.getCustomsInfoNote()
+                    secDec.getAdditionalSecurityInformation() + "\n" + ci.getCustomsInformation()
                 );
             }
             return true;
@@ -1292,7 +1298,7 @@ public final class XFWB3toOneRecordConverter {
         address.setCountry(country);
         OtherIdentifier oi = OneRecordTypeConstants.createOtherIdentifier();
         oi.setOtherIdentifierType(regulated.getRegulatedEntityCategory());
-        oi.setIdentifier(ci.getCustomsInfoNote());
+        oi.setIdentifier(ci.getCustomsInformation());
         company.getBranch().setOtherIdentifiers(buildSet(oi));
         regulated.setRegulatedEntityIdentifier(company);
         return regulated;
@@ -1305,6 +1311,7 @@ public final class XFWB3toOneRecordConverter {
         List<CustomsNoteType> xmlCustomsNotes)
     {
         Company company = enhanceCompany(
+            partyRole,
             createCompany(xmlParty.getPostalStructuredAddress()),
             xmlParty.getName(),
             xmlParty.getDefinedTradeContact(),
@@ -1320,6 +1327,7 @@ public final class XFWB3toOneRecordConverter {
         List<CustomsNoteType> xmlCustomsNotes)
     {
         Company company = enhanceCompany(
+            partyRole,
             createCompany(xmlParty.getPostalStructuredAddress()),
             xmlParty.getName(),
             xmlParty.getDefinedTradeContact(),
@@ -1335,6 +1343,7 @@ public final class XFWB3toOneRecordConverter {
         List<CustomsNoteType> xmlCustomsNotes)
     {
         Company company = enhanceCompany(
+            partyRole,
             createCompany(xmlParty.getFreightForwarderAddress()),
             xmlParty.getName(),
             xmlParty.getDefinedTradeContact(),
@@ -1350,6 +1359,7 @@ public final class XFWB3toOneRecordConverter {
         List<CustomsNoteType> xmlCustomsNotes)
     {
         Company company = enhanceCompany(
+            partyRole,
             createCompany(xmlParty.getPostalStructuredAddress()),
             xmlParty.getName(),
             xmlParty.getDefinedTradeContact(),
@@ -1424,7 +1434,8 @@ public final class XFWB3toOneRecordConverter {
         return contact;
     }
 
-    private Company enhanceCompany(Company company, TextType xmlName,
+    private Company enhanceCompany(PartyRoleCode partyRole,
+        Company company, TextType xmlName,
         List<TradeContactType> xmlContacts, List<CustomsNoteType> xmlPartyCustomsNotes)
     {
         if (company == null) {
@@ -1468,6 +1479,11 @@ public final class XFWB3toOneRecordConverter {
             for (CustomsNoteType customsNote : xmlPartyCustomsNotes) {
                 if ("CT".equals(value(customsNote.getContentCode()))) {
                     // CT = Contact Telephone
+                    if (phone != null) {
+                        addHint(VG_INFORMATION,
+                            "IncludedCustomsNote 'CT' (Contact Telephone) got preferred over <DefinedTradeContact><DirectTelephoneCommunication> for "
+                                + partyRole.code());
+                    }
                     haveContact = true;
                     phone = value(customsNote.getContent());
                 } else

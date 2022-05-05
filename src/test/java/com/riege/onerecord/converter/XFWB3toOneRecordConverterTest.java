@@ -34,6 +34,10 @@ public class XFWB3toOneRecordConverterTest {
             System.out.println(result.awb + " ERROR: " + msg.getMessage());
         }
 
+        for (ValidationMessage msg : result.converter.getValidationHints()) {
+            System.out.println(result.awb + " HINT: " + msg.getMessage());
+        }
+
         System.out.println(result.awb + " JSON=\n" + result.json);
         Assertions.assertTrue(result.json.contains("customsInformation\" : \"USCI1234567812345678X7\""));
         Assertions.assertTrue(result.json.contains("Piece#goodsDescription\" : \"CONSOLIDATION\\nAS PER ATTACHED\\nMANIFEST\\nSECURE CARGO\\nNOT RESTRICTED\\nAIRLINE PHARMA\\nSERVICE\""));
@@ -60,9 +64,7 @@ public class XFWB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("LITTLE CITY"));
         Assertions.assertTrue(result.json.contains("IE"));
         Assertions.assertTrue(result.json.contains("HILDA HILARIOUS"));
-        Assertions.assertTrue(result.json.contains("353123454321"));
-        // Note: 353123454321 "overwrites" 353123456789 even though both are in the XFWB
-        Assertions.assertFalse(result.json.contains("353123456789"));
+        Assertions.assertTrue(result.json.contains("353123456789"));
 
         Assertions.assertTrue(result.json.contains("FORWARDER COMPANY SHANGHAI LTD"));
         Assertions.assertTrue(result.json.contains("ROOM 123 SPECIAL BUILDING. NR 987"));
@@ -90,15 +92,17 @@ public class XFWB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("PVG"));
 
         Assertions.assertTrue(result.json.contains("XX8012"));
+        // The getDepartureEvent().getScheduledOccurrenceDateTime()
+        // map to 1R MovementTimes "SD" in Ontology v1.2
+        Assertions.assertTrue(result.json.contains("MovementTimes#movementMilestone\" : \"SD\""));
+        Assertions.assertTrue(result.json.contains("MovementTimes#movementTimestamp\" : \"2021-03-10T00:00:0"));
+
+        Assertions.assertTrue(result.json.contains("XX345"));
+        Assertions.assertTrue(result.json.contains("MovementTimes#movementTimestamp\" : \"2021-03-12T00:00:0"));
         Assertions.assertTrue(result.json.contains("\"XX\""));
         Assertions.assertTrue(result.json.contains("DUB"));
         Assertions.assertTrue(result.json.contains("2021-03-10T00:00:00"));
-        Assertions.assertTrue(result.json.contains("XX345"));
         Assertions.assertTrue(result.json.contains("AUH"));
-        // The getDepartureEvent().getScheduledOccurrenceDateTime()
-        // should map to 1R MovementTimes but in Ontology v1.1
-        // MovementTimes is not linked in TransportMovement :-/
-        // TODO Assertions.assertTrue(result.json.contains("2021-03-12T00:00:00"));
 
         Assertions.assertTrue(result.json.contains("NSC"));
         Assertions.assertTrue(result.json.contains("4 PALLETS"));
@@ -117,7 +121,13 @@ public class XFWB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("01234-01"));
         Assertions.assertTrue(result.json.contains("RA"));
         Assertions.assertTrue(result.json.contains("ED"));
-        Assertions.assertTrue(result.json.contains("1299"));
+        // Note: 1299 is converted into expiryDate
+        Assertions.assertFalse(result.json.contains("1299"));
+        Assertions.assertTrue(result.json.contains("RegulatedEntity#expiryDate\" : \"2099-12-01T00:00:00\""));
+        Assertions.assertTrue(result.json.contains("MR. SECURITY OFFICER"));
+        // Note: 13APR211147 is converted into issuedOn" : "2021-04-13T11:47:00
+        Assertions.assertFalse(result.json.contains("13APR211147"));
+        Assertions.assertTrue(result.json.contains("SecurityDeclaration#issuedOn\" : \"2021-04-13T11:47:00"));
 
         Assertions.assertTrue(result.json.contains("customsOriginCode\" : \"X\","));
 

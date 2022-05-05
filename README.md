@@ -5,9 +5,15 @@ Note: A live demo of this converter is available at https://onerecord.riege.com/
 
 The IATA Ontology version is reflected by the version of the Riege [one-record-ontologymodel library](https://github.com/riege/one-record-ontologymodel).
 
+It is highly recommended to use converter library 1.0 / Ontology version 2.0 or younger for 
+converting XFWB to ONE Record since IATA Ontology version 2.0 added major improvements for 
+eAWB data fields.
+
 Versions of the converter library:
+* 1.0.x / `branch_1.0`: based upon IATA Ontology 2.0, the ONE Record datamodel as per May 2022, see https://github.com/IATA-Cargo/ONE-Record/tree/master/May-2022-standard-forCOTBendorsement.
+  <br>Uses one-record-ontologymodel version **2.0.x**
 * 0.9.x / `branch_0.9`: based upon IATA Ontology 1.1, the ONE Record datamodel as per June 2021, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-COTB-endorsed.
-  Uses one-record-ontologymodel version 1.1.x
+  <br>Uses one-record-ontologymodel version **1.1.x**
 * current development / `main`: based on IATA ONE Record datamodel working draft, see https://github.com/IATA-Cargo/ONE-Record/tree/master/working_draft/ontology
 
 ## General Backgound Information
