@@ -9,7 +9,9 @@ public class ValidationResult {
     private List<ValidationMessage> messageList = new ArrayList<>();
 
     /**
-     * @Deprecated in version 0.10, use {@link #addHint(String, String)} instead
+     * Deprecated in version 1.0, use {@link #addHint(String, String)} instead
+     *
+     * @param message message to be added as validation hint
      */
     @Deprecated
     public void addHint(String message) {
@@ -21,7 +23,9 @@ public class ValidationResult {
     }
 
     /**
-     * @Deprecated in version 0.10, use {@link #addWarning(String, String)} instead
+     * Deprecated in version 1.0, use {@link #addWarning(String, String)} instead
+     *
+     * @param message message to be added as validation warning
      */
     @Deprecated
     public void addWarning(String message) {
@@ -33,7 +37,9 @@ public class ValidationResult {
     }
 
     /**
-     * @Deprecated in version 0.10, use {@link #addError(String, String)} instead
+     * Deprecated in version 1.0, use {@link #addError(String, String)} instead
+     * 
+     * @param message message to be added as validation werror
      */
     @Deprecated
     public void addError(String message) {

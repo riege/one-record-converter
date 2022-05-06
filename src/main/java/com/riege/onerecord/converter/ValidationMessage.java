@@ -49,8 +49,11 @@ public class ValidationMessage {
     }
 
     /**
-     * @Deprecated use {@link #getGroup()} and {@link #getDetail()} instead
+     * Deprecated in version 1.0 use {@link #getGroup()} and {@link #getDetail()} instead
+     *
+     * @return validation message as string, prefixed with group
      */
+    @Deprecated
     public String getMessage() {
         return group == null ? detail : "[" + group + "] " + detail;
     }

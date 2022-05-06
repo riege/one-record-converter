@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:HouseWaybill xmlns="iata:datamodel:3" xmlns:ns6="urn:un:unece:uncefact:codelist:standard:IANA:MIMEMediaType:2009-09-01" xmlns:ns5="urn:un:unece:uncefact:codelist:standard:UNECE:TransportModeCode:2" xmlns:ns8="urn:un:unece:uncefact:codelist:standard:6:Recommendation20:6" xmlns:ns7="urn:un:unece:uncefact:codelist:standard:6:0133:40106" xmlns:ns9="urn:un:unece:uncefact:codelist:standard:UNECE:DocumentNameCode:D09A" xmlns:ns12="urn:un:unece:uncefact:codelist:standard:5:ISO42173A:2009-09-09" xmlns:ns11="urn:un:unece:uncefact:identifierlist:standard:5:ISO316612A:SecondEdition2006VI-6" xmlns:ns10="urn:un:unece:uncefact:codelist:standard:6:3055:D09A" xmlns:ns2="iata:housewaybill:1" xmlns:ns4="urn:un:unece:uncefact:codelist:standard:IANA:CharacterSetCode:2007-05-14" xmlns:ns3="urn:un:unece:uncefact:codelist:standard:UNECE:PartyRoleCode:D09A">
+    <ns2:MessageHeaderDocument>
+        <ID>SEL22222222_888-11111111_285472ed-0059-4004-9590-8a1fbab07421</ID>
+        <Name>House Waybill</Name>
+        <TypeCode>703</TypeCode>
+        <IssueDateTime>2022-04-29T10:10:00+02:00</IssueDateTime>
+        <PurposeCode>Creation</PurposeCode>
+        <VersionID>3.00</VersionID>
+        <SenderParty>
+            <PrimaryID schemeID="C">RIEGESOFTWARE</PrimaryID>
+        </SenderParty>
+        <SenderParty>
+            <PrimaryID schemeID="P">REUAGT88FORWARDER/FRA01</PrimaryID>
+        </SenderParty>
+        <RecipientParty>
+            <PrimaryID schemeID="C">CCSPROVIDERNAME</PrimaryID>
+        </RecipientParty>
+        <RecipientParty>
+            <PrimaryID schemeID="P">REUAIR08$CODE</PrimaryID>
+        </RecipientParty>
+    </ns2:MessageHeaderDocument>
+    <ns2:BusinessHeaderDocument>
+        <ID>SEL22222222</ID>
+        <IncludedHeaderNote/>
+        <SignatoryConsignorAuthentication>
+            <Signatory>SIEGFRIED SIGNATURE</Signatory>
+        </SignatoryConsignorAuthentication>
+        <SignatoryCarrierAuthentication>
+            <ActualDateTime>2022-04-29T00:00:00</ActualDateTime>
+            <Signatory>ARMIN AIRLINE</Signatory>
+            <IssueAuthenticationLocation>
+                <Name>ICN</Name>
+            </IssueAuthenticationLocation>
+        </SignatoryCarrierAuthentication>
+    </ns2:BusinessHeaderDocument>
+    <ns2:MasterConsignment>
+        <IncludedTareGrossWeightMeasure unitCode="KGM">2217.0</IncludedTareGrossWeightMeasure>
+        <TotalPieceQuantity>59</TotalPieceQuantity>
+        <TransportContractDocument>
+            <ID>888-11111111</ID>
+        </TransportContractDocument>
+        <OriginLocation>
+            <ID>ICN</ID>
+        </OriginLocation>
+        <FinalDestinationLocation>
+            <ID>FRA</ID>
+        </FinalDestinationLocation>
+        <IncludedHouseConsignment>
+            <ID>SEL22222222</ID>
+            <NilCarriageValueIndicator>true</NilCarriageValueIndicator>
+            <NilCustomsValueIndicator>true</NilCustomsValueIndicator>
+            <NilInsuranceValueIndicator>true</NilInsuranceValueIndicator>
+            <TotalChargePrepaidIndicator>true</TotalChargePrepaidIndicator>
+            <TotalDisbursementPrepaidIndicator>true</TotalDisbursementPrepaidIndicator>
+            <TotalPrepaidChargeAmount currencyID="KRW">420</TotalPrepaidChargeAmount>
+            <TotalCollectChargeAmount currencyID="KRW">0</TotalCollectChargeAmount>
+            <IncludedTareGrossWeightMeasure unitCode="KGM">134.0</IncludedTareGrossWeightMeasure>
+            <PackageQuantity>200</PackageQuantity>
+            <TotalPieceQuantity>10</TotalPieceQuantity>
+            <SummaryDescription>SPARE PARTS F345732-D CIP TERM VOL.WGHT. 133.7 KG .088 CBM</SummaryDescription>
+            <ConsignorParty>
+                <Name>SPARE PART LTD.</Name>
+                <PostalStructuredAddress>
+                    <PostcodeCode>12345</PostcodeCode>
+                    <StreetName>42. GONGDAN SEONGSAN</StreetName>
+                    <CityName>CHANGWON-SI. KYUN</CityName>
+                    <CountryID>KR</CountryID>
+                </PostalStructuredAddress>
+                <DefinedTradeContact>
+                    <DirectTelephoneCommunication>
+                        <CompleteNumber>055281234567890</CompleteNumber>
+                    </DirectTelephoneCommunication>
+                </DefinedTradeContact>
+            </ConsignorParty>
+            <ConsigneeParty>
+                <Name>REPAIR DIENST GMBH</Name>
+                <PostalStructuredAddress>
+                    <PostcodeCode>87654</PostcodeCode>
+                    <StreetName>SPEZIAL-STR. 13</StreetName>
+                    <CityName>FRIEDRICHSHAFEN</CityName>
+                    <CountryID>DE</CountryID>
+                </PostalStructuredAddress>
+                <DefinedTradeContact/>
+            </ConsigneeParty>
+            <ApplicableTransportCargoInsurance>
+                <CoverageInsuranceParty/>
+            </ApplicableTransportCargoInsurance>
+            <OriginLocation>
+                <ID>ICN</ID>
+            </OriginLocation>
+            <FinalDestinationLocation>
+                <ID>FDH</ID>
+            </FinalDestinationLocation>
+            <IncludedCustomsNote>
+                <ContentCode>T</ContentCode>
+                <Content>5432109876</Content>
+                <SubjectCode>SHP</SubjectCode>
+                <CountryID>KR</CountryID>
+            </IncludedCustomsNote>
+            <IncludedCustomsNote>
+                <ContentCode>CP</ContentCode>
+                <Content>KIM QUAN KWUN</Content>
+                <SubjectCode>SHP</SubjectCode>
+                <CountryID>KR</CountryID>
+            </IncludedCustomsNote>
+            <IncludedCustomsNote>
+                <ContentCode>CT</ContentCode>
+                <Content>0553456789012</Content>
+                <SubjectCode>SHP</SubjectCode>
+                <CountryID>KR</CountryID>
+            </IncludedCustomsNote>
+            <IncludedCustomsNote>
+                <ContentCode>T</ContentCode>
+                <Content>DE3056777000</Content>
+                <SubjectCode>CNE</SubjectCode>
+                <CountryID>DE</CountryID>
+            </IncludedCustomsNote>
+            <IncludedHouseConsignmentItem>
+                <SequenceNumeric>1</SequenceNumeric>
+                <TypeCode>1133557799</TypeCode>
+                <GrossWeightMeasure unitCode="KGM">133.7</GrossWeightMeasure>
+                <PackageQuantity>100</PackageQuantity>
+                <PieceQuantity>5</PieceQuantity>
+                <Information>NDA</Information>
+                <NatureIdentificationTransportCargo>
+                    <Identification>SPARE PARTS</Identification>
+                </NatureIdentificationTransportCargo>
+                <ApplicableFreightRateServiceCharge>
+                    <ChargeableWeightMeasure unitCode="KGM">50.0</ChargeableWeightMeasure>
+                </ApplicableFreightRateServiceCharge>
+            </IncludedHouseConsignmentItem>
+        </IncludedHouseConsignment>
+    </ns2:MasterConsignment>
+</ns2:HouseWaybill>
