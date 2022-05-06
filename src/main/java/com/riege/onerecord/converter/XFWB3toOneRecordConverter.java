@@ -99,17 +99,8 @@ import static com.riege.onerecord.converter.XFWB3ParserHelper.value;
  *      to 'Useful Resources' / 'JSON-LD representation' and
  *      the 'Take a look at the JSON-LD examples' link.
  */
-public final class XFWB3toOneRecordConverter {
+public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Waybill> {
 
-    public final static String VG_GENERAL = "General";
-    public final static String VG_UNCERTAINTY = "Mapping-Uncertainty";
-    public final static String VG_UNIMPLEMENTED = "Not-Implemented-Yet";
-    public final static String VG_XMLDATAWARNING = "XML-Data-Warning";
-    public final static String VG_XMLDATAERROR = "XML-Data-Error";
-    public final static String VG_INFORMATION = "Info";
-
-    private final WaybillType xfwb;
-    private final ValidationResult validationResult;
     private final Waybill waybill;
 
     /**
@@ -118,47 +109,18 @@ public final class XFWB3toOneRecordConverter {
      * @param xfwb CargoXML XFWB
      */
     public XFWB3toOneRecordConverter(WaybillType xfwb) {
-        this.xfwb = xfwb;
+        super();
 
-        validationResult = new ValidationResult();
         waybill = OneRecordTypeConstants.createWaybill();
-
-        convertData();
+        convertData(xfwb);
     }
 
     /**
      * @return converted OneRecord (master or direct) Waybill
      */
+    @Override
     public Waybill getOneRecordResult() {
         return waybill;
-    }
-
-    /**
-     * @return complete conversion errors, warnings and hints et al
-     */
-    public ValidationResult getValidationResult() {
-        return validationResult;
-    }
-
-    /**
-     * @return conversion hints
-     */
-    public List<ValidationMessage> getValidationHints() {
-        return validationResult.getHints();
-    }
-
-    /**
-     * @return conversion warnings
-     */
-    public List<ValidationMessage> getValidationWarnings() {
-        return validationResult.getWarnings();
-    }
-
-    /**
-     * @return conversion warnings
-     */
-    public List<ValidationMessage> getValidationErrors() {
-        return validationResult.getErrors();
     }
 
     // *************************************************************************
@@ -176,7 +138,7 @@ public final class XFWB3toOneRecordConverter {
     private BusinessHeaderDocumentType xmlBH;
     private String awbCurrency;
 
-    private void convertData() {
+    private void convertData(WaybillType xfwb) {
         /*
          * initialize the basic main 1R data structure:
          * BookingOption
@@ -216,15 +178,6 @@ public final class XFWB3toOneRecordConverter {
         xmlMC = xfwb.getMasterConsignment();
         xmlBH = xfwb.getBusinessHeaderDocument();
 
-        // General Hints()
-        addHint(VG_GENERAL, "This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.");
-        addHint(VG_GENERAL, "This converter is based on XFWB3 schema from IATA CargoXML Toolkit 8th Edition.");
-        addHint(VG_GENERAL, "This converter is based on ONE RECORD datamodel Ontology 1.1, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-forCOTBendorsement/Data-Model");
-        addHint(VG_GENERAL, "Codes and units are applied 1:1 from CargoXML where applicable.");
-        addHint(VG_GENERAL, "Line breaks are respected for some fields if provided in XML, e.g. for multi-line goods description or address name/street");
-        addHint(VG_GENERAL, "Line breaks are intentionally added in 'goodsDescription' and 'accountingInformation' to preserve and indicate descriptions from more than one field if applicaple from original XML");
-        addHint(VG_GENERAL, "XFWB3 to 1R converter is not mapping all possible data yet and has focus on the use-case 'XFWB message from forwarder to airline'");
-
         if (xmlMC.getApplicableOriginCurrencyExchange() != null && xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode() != null) {
             awbCurrency = value(xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode());
             waybill.setOriginCurrency(awbCurrency);
@@ -263,18 +216,6 @@ public final class XFWB3toOneRecordConverter {
         convertCIMPSegment24();
         convertCIMPSegment25();
         convertCIMPSegment29();
-    }
-
-    private void addHint(String group, String text) {
-        validationResult.addHint(group, text);
-    }
-
-    private void addWarning(String group, String text) {
-        validationResult.addWarning(group, text);
-    }
-
-    private void addError(String group, String text) {
-        validationResult.addError(group, text);
     }
 
     // *************************************************************************
@@ -454,7 +395,6 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 6: Consignee (M)
     // *************************************************************************
     private void convertCIMPSegment06() {
-        // mainBooking.setConsignee(consignee);
         if (mainBooking.getParties() == null) {
             mainBooking.setParties(buildSet());
         }
@@ -1104,6 +1044,8 @@ public final class XFWB3toOneRecordConverter {
     // CIMP FWB Segment 29: OCI: Other Customs Information
     // *************************************************************************
     private void convertCIMPSegment29() {
+        // See also XFZB3toOneRecordConverter#convertCIMPSegment06
+        // keep in sync!
         if (isNullOrEmpty(xmlMC.getIncludedCustomsNote())) {
             return;
         }
@@ -1176,7 +1118,7 @@ public final class XFWB3toOneRecordConverter {
         }
     }
 
-    private boolean updateSecurityDeclaration(CustomsInfo ci, SecurityDeclaration secDec,
+    static boolean updateSecurityDeclaration(CustomsInfo ci, SecurityDeclaration secDec,
         String previousCiSubjectCode)
     {
         // ISS = "Issuing" Security Status = issuing
@@ -1270,7 +1212,7 @@ public final class XFWB3toOneRecordConverter {
         return false;
     }
 
-    private RegulatedEntity currentRegulatedEntity(SecurityDeclaration secDec, String previousCiSubjectCode) {
+    static RegulatedEntity currentRegulatedEntity(SecurityDeclaration secDec, String previousCiSubjectCode) {
         if ("ISS".equals(previousCiSubjectCode)) {
             return secDec.getRegulatedEntityIssuer();
         }
@@ -1285,7 +1227,7 @@ public final class XFWB3toOneRecordConverter {
         return null;
     }
 
-    private RegulatedEntity convert(CustomsInfo ci) {
+    static RegulatedEntity convert(CustomsInfo ci) {
         // Example: IE/ISS/RA/00084-01
         // Example: ///AC/12345ABCDE
         // CustomsInformation / CustomsInfoSubjectCode / CustomsInfoContentCode / CustomsInfoNote
@@ -1414,7 +1356,7 @@ public final class XFWB3toOneRecordConverter {
         return company;
     }
 
-    private Address prepareCompanyAddress(Company company) {
+    static Address prepareCompanyAddress(Company company) {
         if (company.getBranch() == null) {
             company.setBranch(OneRecordTypeConstants.createCompanyBranch());
         }

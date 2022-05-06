@@ -196,7 +196,7 @@ public class XFWB3toOneRecordConverterTest {
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
 
         InputStream is = ClassLoader.getSystemResourceAsStream(filename);
-        WaybillType xfwb = new ConverterUtil().unmarshalXFWB3(is);
+        WaybillType xfwb = new ConverterUtil().unmarshallXFWB3(is);
         result.awb = xfwb.getBusinessHeaderDocument().getID().getValue();
         result.converter = new XFWB3toOneRecordConverter(xfwb);
         result.json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.converter.getOneRecordResult());

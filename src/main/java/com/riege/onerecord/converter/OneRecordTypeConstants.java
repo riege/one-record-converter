@@ -274,6 +274,8 @@ public class OneRecordTypeConstants {
     }
 
     /**
+     * @param <T> the type of elements maintained by this set
+     * @param singleEntry is added to the generated and returned Set
      * @return Set built from the provided data, null if provided data is null
      */
     public static final <T> Set<T> buildSet(T singleEntry) {
@@ -284,6 +286,8 @@ public class OneRecordTypeConstants {
     }
 
     /**
+     * @param <T> the type of elements maintained by this set
+     * @param array entries are added to the generated and returned Set
      * @return Set built from the provided data even if the array is empty, null if provided data is null
      */
     public static final <T> Set<T> buildSet(T[] array) {
@@ -294,6 +298,8 @@ public class OneRecordTypeConstants {
     }
 
     /**
+     * @param <T> the type of elements maintained by this set
+     * @param list entries are added to the generated and returned Set
      * @return Set built from the provided data even if the list is empty, null if provided data is null
      */
     public static final <T> Set<T> buildSet(List<T> list) {

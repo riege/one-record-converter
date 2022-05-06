@@ -1,4 +1,4 @@
-# Cargo-XML XFWB to ONE Record Converter
+# Cargo-XML XFWB / XFZB to ONE Record Converter
 Note: A live demo of this converter is available at https://onerecord.riege.com/
 
 ## Release versioning and IATA Ontology versions
@@ -6,7 +6,7 @@ Note: A live demo of this converter is available at https://onerecord.riege.com/
 The IATA Ontology version is reflected by the version of the Riege [one-record-ontologymodel library](https://github.com/riege/one-record-ontologymodel).
 
 It is highly recommended to use converter library 1.0 / Ontology version 2.0 or younger for 
-converting XFWB to ONE Record since IATA Ontology version 2.0 added major improvements for 
+converting XFWB or XFZB to ONE Record since IATA Ontology version 2.0 added major improvements for 
 eAWB data fields.
 
 Versions of the converter library:
@@ -22,7 +22,7 @@ This converter intentionally does neither set IDs nor makes use of persisted dat
 The converter is based on two main data structures to convert from Cargo-XML to ONE Record:
 
 * For parsing Cargo-XML the converter uses Java classes which had been generated from the 
-  Cargo-XML XFWB3 schema. These generated classes are included via library
+  Cargo-XML schema. These generated classes are included via library
   https://github.com/riege/cargoxml-jaxb.
   Please note that the cargoxml-jaxb package does not contain any schema information from the IATA Cargo-XML
   Toolkit.
@@ -40,12 +40,15 @@ Codes and units are copied 1:1 from the provided Cargo-XML message where applica
 
 Line breaks are respected for some fields if provided in XML, e.g. for multi-line goods description or address name/street. Line breaks are intentionally used in GoodsDescription to preserve and indicate descriptions from more than one field if applicaple from original XML
 
-At the moment the converted is limited to map the Cargo-XML XFWB3 message to ONE Record JSON. 
-Please note that the XFWB3 to 1R converter is not mapping all possible data yet and has focus on a XFWB message from a forwarder to an airline
+Version 0.9 is limited to map the Cargo-XML XFWB3 message to ONE Record JSON.
+Version 1.0 adds a basic mapping for the Cargo-XML XFZB3 message.
+Please note that the 1R converter is not mapping all possible data yet and has focus on the use-case 'message from a forwarder to an airline'.
 
 ## Usage
 
 ### Programming 
+
+#### XFWB
 The main Cargo-XML class for XFWB3 is `com.riege.cargoxml.schema.xfwb3.WaybillType`.
 
 The `com.riege.onerecord.converter.XFWB3toOneRecordConverter` converts a provided 
@@ -67,8 +70,13 @@ into validation results plus hints and especially into ONE Record logistics data
     }
     Waybill oneRecordWaybill = converter.getOneRecordResult();
 
-The `Waybill` can be serialized easily into JSON, e.g. with https://github.com/FasterXML/jackson 
+The `Waybill` can be serialized easily into JSON, e.g. with https://github.com/FasterXML/jackson
 
+#### XFZB
+For XFZB3, the main Cargo-XML class is `com.riege.cargoxml.schema.xfzb3.HouseWaybillType`.
+
+The `com.riege.onerecord.converter.XFZB3toOneRecordConverter` converts in a similar way
+from `HouseWaybillType` into `org.iata.cargo.model.Waybill`.
 
 ### Library usage
 The converter library is not published on mavenCentral (yet).
