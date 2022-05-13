@@ -92,7 +92,7 @@ and it can be also integrated into a Java project as a depencency via https://ji
     }
 
     dependencies {
-      implementation 'com.github.riege:one-record-converter:0.9.0'
+      implementation 'com.github.riege:one-record-converter:1.0.+'
     }
 
 [maven](https://maven.apache.org):
@@ -100,7 +100,7 @@ and it can be also integrated into a Java project as a depencency via https://ji
     <dependency>
       <groupId>com.github.riege</groupId>
       <artifactId>one-record-converter</artifactId>
-      <version>0.9.0</version>
+      <version>1.0.1</version>
     </dependency>
 
 See https://jitpack.io/#riege/one-record-converter for more details.
