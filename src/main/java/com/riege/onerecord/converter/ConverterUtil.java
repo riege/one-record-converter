@@ -36,12 +36,23 @@ public final class ConverterUtil {
 
     /**
      * Deprecated in version 1.0, use unmarshallXFWB3 instead
+     *
+     * @return XFWB3 JAXB domain model unmarshalled from the inputstream
+     * @param inputStream XML inputstream
+     * @throws JAXBException if XML does not match XML schema or other JAXBException
      */
     @Deprecated
     public WaybillType unmarshalXFWB3(InputStream inputStream) throws JAXBException {
         return unmarshallXFWB3(inputStream);
     }
 
+    /**
+     * Unmarshall XML inputstream into XFWB3 model
+     *
+     * @return XFWB3 JAXB domain model unmarshalled from the inputstream
+     * @param inputStream XML inputstream
+     * @throws JAXBException if XML does not match XML schema or other JAXBException
+     */
     public WaybillType unmarshallXFWB3(InputStream inputStream) throws JAXBException {
         Object result = getXFWB3Unmarshaller().unmarshal(inputStream);
         if (!(result instanceof JAXBElement)) {
