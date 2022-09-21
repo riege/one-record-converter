@@ -28,6 +28,7 @@ import org.iata.cargo.model.HandlingInstructions;
 import org.iata.cargo.model.Insurance;
 import org.iata.cargo.model.Item;
 import org.iata.cargo.model.Location;
+import org.iata.cargo.model.MovementTimes;
 import org.iata.cargo.model.OtherIdentifier;
 import org.iata.cargo.model.Party;
 import org.iata.cargo.model.Person;
@@ -133,6 +134,12 @@ public class OneRecordTypeConstants {
     public static final TransportMovement createTransportMovement() {
         TransportMovement model = new TransportMovement();
         model.setTypes(buildTypeset(Vocabulary.s_c_TransportMovement));
+        return model;
+    }
+
+    public static final MovementTimes createMovementTimes() {
+        MovementTimes model = new MovementTimes();
+        model.setTypes(buildTypeset(Vocabulary.s_c_MovementTimes));
         return model;
     }
 

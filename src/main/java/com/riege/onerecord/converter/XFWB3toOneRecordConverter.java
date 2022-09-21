@@ -352,7 +352,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     // The getDepartureEvent().getScheduledOccurrenceDateTime()
                     // should map to 1R MovementTimes but in Ontology v1.1
                     // MovementTimes is not linked in TransportMovement :-/
-                    MovementTimes mt = new MovementTimes();
+                    MovementTimes mt = OneRecordTypeConstants.createMovementTimes();
                     mt.setMovementTimestamp(ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().getTime());
                     mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE);
                     // Ontology v1.1:
