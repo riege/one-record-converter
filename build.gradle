@@ -102,7 +102,7 @@ dependencies {
     implementation ":cargoxml-jaxb-8.1:"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
-    testImplementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+    testImplementation 'com.fasterxml.jackson.core:jackson-core:2.14.1'
     testImplementation "com.fasterxml.jackson.core:jackson-annotations:2.13.4"
     testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
 
