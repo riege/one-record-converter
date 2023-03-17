@@ -118,8 +118,8 @@ shadowJar {
     // the default shadowJar task will output a file at:
     // build/libs/myApp-1.0-all.jar
     //
-    // to remove the '-all', we set classifier to null:
-    classifier = null
+    // to remove the '-all', we set archiveClassifier to null:
+    archiveClassifier = null
 }
 build.dependsOn(shadowJar)
 
