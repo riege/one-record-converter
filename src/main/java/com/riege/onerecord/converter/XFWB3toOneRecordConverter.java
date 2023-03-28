@@ -158,6 +158,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
 
         // NOTE: v1.1 is the last version which uses TransportSegment
         //       will be replaced by TransportMovement in future versions
+        //       BookingOption has no setter for TransportMovement yet!
         mainTransportSegment = OneRecordTypeConstants.createTransportSegment();
         mainBooking.setTransportMovement(buildSet(mainTransportSegment));
 
