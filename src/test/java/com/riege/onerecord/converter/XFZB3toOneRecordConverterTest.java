@@ -1,27 +1,22 @@
 package com.riege.onerecord.converter;
 
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 
 import javax.xml.bind.JAXBException;
 
-import org.iata.cargo.codelists.WaybillTypeCode;
+import org.iata.onerecord.cargo.codelists.WaybillTypeCode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
-import com.riege.cargoxml.schema.xfwb3.WaybillType;
 import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
 
 public class XFZB3toOneRecordConverterTest {
 
     @Test
     public void testSEL22222222() throws JAXBException, JsonProcessingException {
-        XFZB3toOneRecordConverterTest.Result result =
+        Result result =
             fileProcessingTest("SEL22222222_XFZB.xml");
         Assertions.assertNotNull(result.converter.getValidationWarnings());
         Assertions.assertFalse(result.converter.getValidationWarnings().isEmpty());
@@ -49,9 +44,9 @@ public class XFZB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("2022-04-29T00:00:00"));
         Assertions.assertTrue(result.json.contains("ARMIN AIRLINE"));
         Assertions.assertTrue(result.json.contains("SIEGFRIED SIGNATURE"));
-        Assertions.assertTrue(result.json.contains("Location#code\" : \"ICN\""));
-        Assertions.assertTrue(result.json.contains("Location#code\" : \"FDH\""));
-        Assertions.assertFalse(result.json.contains("Location#code\" : \"FRA\""));
+        Assertions.assertTrue(result.json.contains("code\" : \"ICN\""));
+        Assertions.assertTrue(result.json.contains("code\" : \"FDH\""));
+        Assertions.assertFalse(result.json.contains("code\" : \"FRA\""));
         // FEHLT Assertions.assertTrue(result.json.contains("8112345678"));
         Assertions.assertTrue(result.json.contains("nvdForCarriage\" : true"));
         Assertions.assertTrue(result.json.contains("nvdForCustoms\" : true"));
@@ -61,7 +56,7 @@ public class XFZB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("134.0"));
 
         Assertions.assertTrue(result.json.contains("customsInformation\" : \"5432109876\""));
-        Assertions.assertTrue(result.json.contains("Piece#goodsDescription\" : \"SPARE PARTS\""));
+        Assertions.assertTrue(result.json.contains("goodsDescription\" : \"SPARE PARTS\""));
 
         Assertions.assertTrue(result.json.contains("SPARE PART LTD"));
         Assertions.assertTrue(result.json.contains("42. GONGDAN SEONGSAN"));
@@ -88,31 +83,18 @@ public class XFZB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("PieceCount\" : 10"));
 
         // Some more
-        Assertions.assertTrue(result.json.contains("#hsCode\" : \"1133557799\""));
+        Assertions.assertTrue(result.json.contains("hsCode\" : \"1133557799\""));
     }
 
-    private XFZB3toOneRecordConverterTest.Result fileProcessingTest(String filename) throws JAXBException, JsonProcessingException {
-        XFZB3toOneRecordConverterTest.Result result = new Result();
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // mapper.disable(SerializationFeature.WRAP_ROOT_VALUE);
-        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
-
+    private Result fileProcessingTest(String filename) throws JAXBException, JsonProcessingException {
         InputStream is = ClassLoader.getSystemResourceAsStream(filename);
         HouseWaybillType xfzb = new ConverterUtil().unmarshallXFZB3(is);
+        Result result = new Result();
         result.awb = xfzb.getBusinessHeaderDocument().getID().getValue();
         result.converter = new XFZB3toOneRecordConverter(xfzb);
-        result.json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.converter.getOneRecordResult());
+        result.json = JacksonTestHelper.writePrettyJacksonJSON(result.converter.getOneRecordResult());
         Assertions.assertNotNull(result.json);
         return result;
-    }
-
-    class Result {
-        XFZB3toOneRecordConverter converter;
-        String awb;
-        String json;
     }
 
 }

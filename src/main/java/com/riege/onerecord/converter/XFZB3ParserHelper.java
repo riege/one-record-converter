@@ -2,9 +2,9 @@ package com.riege.onerecord.converter;
 
 import java.math.BigDecimal;
 
-import org.iata.cargo.model.Country;
-import org.iata.cargo.model.Location;
-import org.iata.cargo.model.Value;
+import org.iata.onerecord.cargo.model.Country;
+import org.iata.onerecord.cargo.model.Location;
+import org.iata.onerecord.cargo.model.Value;
 
 import com.riege.cargoxml.schema.xfzb3.AmountType;
 import com.riege.cargoxml.schema.xfzb3.ArrivalLocationType;

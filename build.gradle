@@ -90,9 +90,9 @@ dependencies {
     //     implementation('com.github.riege:one-record-ontologymodel:daec14a075') { transitive = false }
     //     implementation('com.github.riege:one-record-ontologymodel:e9f5883a21') { transitive = false }
     // github/riege internal dependency:
-    //     implementation('com.riege:one-record-ontologymodel:1.1.2') { transitive = false }
+    //     implementation('com.riege:one-record-ontologymodel:2.0.1') { transitive = false }
 
-    implementation('com.github.riege:one-record-ontologymodel:2.0.1') { transitive = false }
+    implementation('com.github.riege:one-record-ontologydatamodel:main-SNAPSHOT')
 
     // cargoxml-jaxb from riege.com cannot be retrieved via https://jitpack.io
     // because building it requires access to the Cargo-XML Toolkit schema files
@@ -105,7 +105,9 @@ dependencies {
     testImplementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
     testImplementation "com.fasterxml.jackson.core:jackson-annotations:2.13.4"
     testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
-
+    // Java 8 date/time type `java.time.OffsetDateTime` not supported by default
+    // so we need to add com.fasterxml.jackson.datatype:jackson-datatype-jsr310:
+    testImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
 }
 

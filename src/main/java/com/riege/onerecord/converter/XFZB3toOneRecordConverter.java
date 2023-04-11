@@ -5,49 +5,49 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.iata.cargo.codelists.ContactTypeCode;
-import org.iata.cargo.codelists.OtherIdentifierTypeCode;
-import org.iata.cargo.codelists.PartyRoleCode;
-import org.iata.cargo.codelists.WaybillTypeCode;
-import org.iata.cargo.model.Address;
-import org.iata.cargo.model.BookingOption;
-import org.iata.cargo.model.Carrier;
-import org.iata.cargo.model.Company;
-import org.iata.cargo.model.Contact;
-import org.iata.cargo.model.CustomsInfo;
-import org.iata.cargo.model.Dimensions;
-import org.iata.cargo.model.Insurance;
-import org.iata.cargo.model.Item;
-import org.iata.cargo.model.OtherIdentifier;
-import org.iata.cargo.model.Party;
-import org.iata.cargo.model.Person;
-import org.iata.cargo.model.Piece;
-import org.iata.cargo.model.SecurityDeclaration;
-import org.iata.cargo.model.Shipment;
-import org.iata.cargo.model.TransportSegment;
-import org.iata.cargo.model.ULD;
-import org.iata.cargo.model.Value;
-import org.iata.cargo.model.VolumetricWeight;
-import org.iata.cargo.model.Waybill;
+import org.iata.onerecord.cargo.codelists.ContactTypeCode;
+import org.iata.onerecord.cargo.codelists.OtherIdentifierTypeCode;
+import org.iata.onerecord.cargo.codelists.PartyRoleCode;
+import org.iata.onerecord.cargo.codelists.WaybillTypeCode;
+import org.iata.onerecord.cargo.model.Address;
+import org.iata.onerecord.cargo.model.BookingOption;
+import org.iata.onerecord.cargo.model.Carrier;
+import org.iata.onerecord.cargo.model.Company;
+import org.iata.onerecord.cargo.model.Contact;
+import org.iata.onerecord.cargo.model.CustomsInfo;
+import org.iata.onerecord.cargo.model.Dimensions;
+import org.iata.onerecord.cargo.model.Insurance;
+import org.iata.onerecord.cargo.model.Item;
+import org.iata.onerecord.cargo.model.OtherIdentifier;
+import org.iata.onerecord.cargo.model.Party;
+import org.iata.onerecord.cargo.model.Person;
+import org.iata.onerecord.cargo.model.Piece;
+import org.iata.onerecord.cargo.model.SecurityDeclaration;
+import org.iata.onerecord.cargo.model.Shipment;
+import org.iata.onerecord.cargo.model.TransportMovement;
+import org.iata.onerecord.cargo.model.ULD;
+import org.iata.onerecord.cargo.model.Value;
+import org.iata.onerecord.cargo.model.VolumetricWeight;
+import org.iata.onerecord.cargo.model.Waybill;
 
-import com.riege.cargoxml.schema.xfzb3.ConsigneePartyType;
-import com.riege.cargoxml.schema.xfzb3.ConsignorPartyType;
-import com.riege.cargoxml.schema.xfzb3.StructuredAddressType;
-import com.riege.cargoxml.schema.xfzb3.TextType;
-import com.riege.cargoxml.schema.xfzb3.TradeContactType;
 import com.riege.cargoxml.schema.xfzb3.AuthenticationLocationType;
+import com.riege.cargoxml.schema.xfzb3.BusinessHeaderDocumentType;
 import com.riege.cargoxml.schema.xfzb3.CarrierAuthenticationType;
 import com.riege.cargoxml.schema.xfzb3.CodeType;
+import com.riege.cargoxml.schema.xfzb3.ConsigneePartyType;
 import com.riege.cargoxml.schema.xfzb3.ConsignorAuthenticationType;
+import com.riege.cargoxml.schema.xfzb3.ConsignorPartyType;
 import com.riege.cargoxml.schema.xfzb3.CustomsNoteType;
 import com.riege.cargoxml.schema.xfzb3.HouseConsignmentItemType;
 import com.riege.cargoxml.schema.xfzb3.HouseConsignmentType;
+import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
 import com.riege.cargoxml.schema.xfzb3.LogisticsPackageType;
-import com.riege.cargoxml.schema.xfzb3.SpatialDimensionType;
-import com.riege.cargoxml.schema.xfzb3.BusinessHeaderDocumentType;
 import com.riege.cargoxml.schema.xfzb3.MasterConsignmentType;
 import com.riege.cargoxml.schema.xfzb3.MessageHeaderDocumentType;
-import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
+import com.riege.cargoxml.schema.xfzb3.SpatialDimensionType;
+import com.riege.cargoxml.schema.xfzb3.StructuredAddressType;
+import com.riege.cargoxml.schema.xfzb3.TextType;
+import com.riege.cargoxml.schema.xfzb3.TradeContactType;
 import com.riege.cargoxml.schema.xfzb3.UnitLoadTransportEquipmentType;
 
 import static com.riege.onerecord.converter.ConverterUtil.isNullOrEmpty;
@@ -73,7 +73,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
     private BookingOption mainBooking;
     private Carrier mainAirline;
-    private TransportSegment mainTransportSegment;
+    private TransportMovement mainTransportSegment;
     private Shipment mainShipment;
     private Piece mainPiece;
 
@@ -100,18 +100,19 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         // mainBooking = OneRecordTypeConstants.createBooking();
         // waybill.setBookingRef(mainBooking);
         mainBooking = OneRecordTypeConstants.createBookingOption();
-        waybill.setBooking(mainBooking);
+        waybill.setBooking(OneRecordTypeConstants.createBooking());
+        waybill.getBooking().setBookingRequest(OneRecordTypeConstants.createBookingRequest());
+        waybill.getBooking().getBookingRequest().setBookingOption(mainBooking);
 
-        // NOTE: v1.1 is the last version which uses TransportSegment
-        //       will be replaced by TransportMovement in future versions
-        mainTransportSegment = OneRecordTypeConstants.createTransportSegment();
-        mainBooking.setTransportMovement(buildSet(mainTransportSegment));
+        // NOTE: BookingOption has no setter for TransportMovement yet!
+        mainTransportSegment = OneRecordTypeConstants.createTransportMovement();
 
         mainShipment = OneRecordTypeConstants.createShipment();
         mainBooking.setShipmentDetails(mainShipment);
 
         mainPiece = OneRecordTypeConstants.createPiece();
-        mainTransportSegment.setTransportedPieces(buildSet(mainPiece));
+        mainPiece.setTransportMovements(buildSet(mainTransportSegment));
+        mainShipment.setContainedPieces(buildSet(mainPiece));
 
         // Add the main carrier, as per AWB prefix
         mainAirline = OneRecordTypeConstants.createCarrier();
@@ -125,7 +126,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         xmlBH = xfzb.getBusinessHeaderDocument();
         xmlHouse = xmlMC.getIncludedHouseConsignment();
 
-        waybill.setWaybillType(WaybillTypeCode.HOUSE);
+        waybill.setWaybillType(WaybillTypeCode.HOUSE.code());
         /*
          * Conversion is split by topic of the individual CIMP segments,
          * just to allow easier navigation though source code.
@@ -147,7 +148,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
         if (sigCarrier != null) {
             waybill.setCarrierDeclarationSignature(value(sigCarrier.getSignatory()));
-            waybill.setCarrierDeclarationDate(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
+            waybill.setCarrierDeclarationDate(convertToOffsetDateTime(sigCarrier.getActualDateTime()));
             AuthenticationLocationType location = sigCarrier.getIssueAuthenticationLocation();
             if (location != null) {
                 waybill.setCarrierDeclarationPlace(OneRecordTypeConstants.createLocation());
@@ -383,7 +384,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             }
         }
         if (haveSecDec) {
-            mainPiece.setSecurityStatus(secDec);
+            mainPiece.setSecurityDeclaration(secDec);
         }
     }
 
@@ -451,12 +452,12 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
     private Party createParty(PartyRoleCode partyRole, Company company, String accountID) {
         Party party = OneRecordTypeConstants.createParty();
-        party.setPartyRole(partyRole);
+        party.setPartyRole(partyRole.code());
         party.setPartyDetails(company);
         if (accountID != null) {
             // See https://github.com/IATA-Cargo/ONE-Record/issues/130
             OtherIdentifier oi = OneRecordTypeConstants.createOtherIdentifier();
-            oi.setOtherIdentifierType(OtherIdentifierTypeCode.ACCOUNT_ID);
+            oi.setOtherIdentifierType(OtherIdentifierTypeCode.ACCOUNT_ID.code());
             oi.setOtherIdentifierType("AccountID");
             oi.setIdentifier(accountID);
             party.setOtherIdentifiers(buildSet(oi));
@@ -494,7 +495,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
     private Contact createContact(ContactTypeCode type, String value) {
         Contact contact = OneRecordTypeConstants.createContact();
-        contact.setContactType(type);
+        contact.setContactType(type.code());
         contact.setContactValue(value);
         return contact;
     }
@@ -610,17 +611,17 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         mainPiece.setNvdForCarriage(xmlHouse.isNilCarriageValueIndicator());
         boolean isNilCarriage = xmlHouse.isNilCarriageValueIndicator() != null && xmlHouse.isNilCarriageValueIndicator();
         if (!isNilCarriage) {
-            mainPiece.setDeclaredValueForCarriage(buildSet(
+            mainPiece.setDeclaredValueForCarriage(
                 xmlHouse.getDeclaredValueForCarriageAmount().getValue().toString()
-            ));
+            );
         }
 
         mainPiece.setNvdForCustoms(xmlHouse.isNilCustomsValueIndicator());
         boolean isNilCustoms = xmlHouse.isNilCustomsValueIndicator() != null && xmlHouse.isNilCustomsValueIndicator();
         if (!isNilCustoms) {
-            mainPiece.setDeclaredValueForCustoms(buildSet(
+            mainPiece.setDeclaredValueForCustoms(
                 xmlHouse.getDeclaredValueForCustomsAmount().getValue().toString()
-            ));
+            );
         }
     }
 

@@ -1,79 +1,92 @@
 package com.riege.onerecord.converter;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.iata.cargo.Vocabulary;
-import org.iata.cargo.model.Address;
-import org.iata.cargo.model.Booking;
-import org.iata.cargo.model.BookingOption;
-import org.iata.cargo.model.Branch;
-import org.iata.cargo.model.Carrier;
-import org.iata.cargo.model.Company;
-import org.iata.cargo.model.CompanyBranch;
-import org.iata.cargo.model.Contact;
-import org.iata.cargo.model.ContactOther;
-import org.iata.cargo.model.Country;
-import org.iata.cargo.model.CustomsInfo;
-import org.iata.cargo.model.Dimensions;
-import org.iata.cargo.model.Event;
-import org.iata.cargo.model.HandlingInstructions;
-import org.iata.cargo.model.Insurance;
-import org.iata.cargo.model.Item;
-import org.iata.cargo.model.Location;
-import org.iata.cargo.model.MovementTimes;
-import org.iata.cargo.model.OtherIdentifier;
-import org.iata.cargo.model.Party;
-import org.iata.cargo.model.Person;
-import org.iata.cargo.model.Piece;
-import org.iata.cargo.model.Price;
-import org.iata.cargo.model.Product;
-import org.iata.cargo.model.Ranges;
-import org.iata.cargo.model.Ratings;
-import org.iata.cargo.model.RegulatedEntity;
-import org.iata.cargo.model.Routing;
-import org.iata.cargo.model.SecurityDeclaration;
-import org.iata.cargo.model.ServiceRequest;
-import org.iata.cargo.model.Shipment;
-import org.iata.cargo.model.SpecialHandling;
-import org.iata.cargo.model.TransportMeans;
-import org.iata.cargo.model.TransportMovement;
-import org.iata.cargo.model.TransportSegment;
-import org.iata.cargo.model.ULD;
-import org.iata.cargo.model.Value;
-import org.iata.cargo.model.VolumetricWeight;
-import org.iata.cargo.model.Waybill;
+import org.iata.onerecord.cargo.Vocabulary;
+import org.iata.onerecord.cargo.model.Address;
+import org.iata.onerecord.cargo.model.Booking;
+import org.iata.onerecord.cargo.model.BookingOption;
+import org.iata.onerecord.cargo.model.BookingRequest;
+import org.iata.onerecord.cargo.model.Carrier;
+import org.iata.onerecord.cargo.model.Company;
+import org.iata.onerecord.cargo.model.CompanyBranch;
+import org.iata.onerecord.cargo.model.Contact;
+import org.iata.onerecord.cargo.model.Country;
+import org.iata.onerecord.cargo.model.CustomsInfo;
+import org.iata.onerecord.cargo.model.Dimensions;
+import org.iata.onerecord.cargo.model.Event;
+import org.iata.onerecord.cargo.model.HandlingInstructions;
+import org.iata.onerecord.cargo.model.Insurance;
+import org.iata.onerecord.cargo.model.Item;
+import org.iata.onerecord.cargo.model.Location;
+import org.iata.onerecord.cargo.model.MovementTimes;
+import org.iata.onerecord.cargo.model.OtherIdentifier;
+import org.iata.onerecord.cargo.model.Party;
+import org.iata.onerecord.cargo.model.Person;
+import org.iata.onerecord.cargo.model.Piece;
+import org.iata.onerecord.cargo.model.Price;
+import org.iata.onerecord.cargo.model.Product;
+import org.iata.onerecord.cargo.model.Ranges;
+import org.iata.onerecord.cargo.model.Ratings;
+import org.iata.onerecord.cargo.model.RegulatedEntity;
+import org.iata.onerecord.cargo.model.Routing;
+import org.iata.onerecord.cargo.model.SecurityDeclaration;
+import org.iata.onerecord.cargo.model.Shipment;
+import org.iata.onerecord.cargo.model.TransportMeans;
+import org.iata.onerecord.cargo.model.TransportMovement;
+import org.iata.onerecord.cargo.model.ULD;
+import org.iata.onerecord.cargo.model.Value;
+import org.iata.onerecord.cargo.model.VolumetricWeight;
+import org.iata.onerecord.cargo.model.Waybill;
 
 public class OneRecordTypeConstants {
 
+    public static final <T> T create(Class<T> clazz) {
+        try {
+            T instance = clazz.getConstructor(new Class[0]).newInstance(new Object[0]);
+            Field field = Vocabulary.class.getDeclaredField("s_c_" + clazz.getSimpleName());
+            Set<String> typeValue = new LinkedHashSet<>(Collections.singletonList((String) field.get(null)));
+            Method typeSetter = clazz.getMethod("setTypes", new Class[] { Set.class } );
+            typeSetter.invoke(instance, typeValue);
+            return instance;
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final Value createValue() {
-        Value model = new Value();
-        model.setTypes(buildTypeset(Vocabulary.s_c_Value));
-        return model;
+        return create(Value.class);
     }
 
     public static final Event createEvent() {
-        Event model = new Event();
-        model.setTypes(buildTypeset(Vocabulary.s_c_Event));
-        return model;
+        return create(Event.class);
     }
 
     public static final Shipment createShipment() {
-        Shipment model = new Shipment();
-        model.setTypes(buildTypeset(Vocabulary.s_c_Shipment));
-        return model;
+        return create(Shipment.class);
     }
 
     public static final Waybill createWaybill() {
-        Waybill model = new Waybill();
-        model.setTypes(buildTypeset(Vocabulary.s_c_Waybill));
+        return create(Waybill.class);
+    }
+
+    public static final Booking createBooking() {
+        Booking model = new Booking();
+        model.setTypes(buildTypeset(Vocabulary.s_c_Booking));
+        return model;
+    }
+
+    public static final BookingRequest createBookingRequest() {
+        BookingRequest model = new BookingRequest();
+        model.setTypes(buildTypeset(Vocabulary.s_c_BookingRequest));
         return model;
     }
 
@@ -125,12 +138,6 @@ public class OneRecordTypeConstants {
         return model;
     }
 
-    public static final TransportSegment createTransportSegment() {
-        TransportSegment model = new TransportSegment();
-        model.setTypes(buildTypeset(Vocabulary.s_c_TransportSegment));
-        return model;
-    }
-
     public static final TransportMovement createTransportMovement() {
         TransportMovement model = new TransportMovement();
         model.setTypes(buildTypeset(Vocabulary.s_c_TransportMovement));
@@ -164,12 +171,6 @@ public class OneRecordTypeConstants {
     public static final VolumetricWeight createVolumetricWeight() {
         VolumetricWeight model = new VolumetricWeight();
         model.setTypes(buildTypeset(Vocabulary.s_c_VolumetricWeight));
-        return model;
-    }
-
-    public static final ServiceRequest createServiceRequest() {
-        ServiceRequest model = new ServiceRequest();
-        model.setTypes(buildTypeset(Vocabulary.s_c_ServiceRequest));
         return model;
     }
 
@@ -242,12 +243,6 @@ public class OneRecordTypeConstants {
     public static final CustomsInfo createCustomsInfo() {
         CustomsInfo model = new CustomsInfo();
         model.setTypes(buildTypeset(Vocabulary.s_c_CustomsInfo));
-        return model;
-    }
-
-    public static final SpecialHandling createSpecialHandling() {
-        SpecialHandling model = new SpecialHandling();
-        model.setTypes(buildTypeset(Vocabulary.s_c_SpecialHandling));
         return model;
     }
 
