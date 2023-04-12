@@ -1233,10 +1233,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         RegulatedEntity regulated = OneRecordTypeConstants.createRegulatedEntity();
         regulated.setRegulatedEntityCategory(ci.getCustomsInfoContentCode());
         Company company = OneRecordTypeConstants.createCompany();
-        Address address = prepareCompanyAddress(company);
-        Country country = OneRecordTypeConstants.createCountry();
-        country.setCountryCode(ci.getCustomsInformation());
-        address.setCountry(country);
+        company.setBranch(OneRecordTypeConstants.createCompanyBranch());
         OtherIdentifier oi = OneRecordTypeConstants.createOtherIdentifier();
         oi.setOtherIdentifierType(regulated.getRegulatedEntityCategory());
         oi.setIdentifier(ci.getCustomsInformation());
