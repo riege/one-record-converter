@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
+import com.riege.onerecord.jsonutils.JacksonObjectMapper;
 
 public class XFZB3toOneRecordConverterTest {
 
@@ -92,7 +93,11 @@ public class XFZB3toOneRecordConverterTest {
         Result result = new Result();
         result.awb = xfzb.getBusinessHeaderDocument().getID().getValue();
         result.converter = new XFZB3toOneRecordConverter(xfzb);
-        result.json = JacksonTestHelper.writePrettyJacksonJSON(result.converter.getOneRecordResult());
+        Object object = result.converter.getOneRecordResult();
+        result.json =
+            JacksonObjectMapper.buildMapperWithoutTimezone()
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(object);
         Assertions.assertNotNull(result.json);
         return result;
     }
