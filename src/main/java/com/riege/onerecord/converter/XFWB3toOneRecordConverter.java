@@ -22,6 +22,7 @@ import org.iata.onerecord.cargo.codelists.PartyRoleCode;
 import org.iata.onerecord.cargo.codelists.WaybillTypeCode;
 import org.iata.onerecord.cargo.model.Address;
 import org.iata.onerecord.cargo.model.BookingOption;
+import org.iata.onerecord.cargo.model.BookingSegment;
 import org.iata.onerecord.cargo.model.Carrier;
 import org.iata.onerecord.cargo.model.Company;
 import org.iata.onerecord.cargo.model.Contact;
@@ -127,7 +128,6 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     // OneRecord helper instances
     private BookingOption mainBooking;
     private Carrier mainAirline;
-    private TransportMovement mainTransportSegment;
     private Shipment mainShipment;
     private Piece mainPiece;
 
@@ -157,16 +157,10 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         waybill.getBooking().setBookingRequest(OneRecordTypeConstants.createBookingRequest());
         waybill.getBooking().getBookingRequest().setBookingOption(mainBooking);
 
-        // NOTE: BookingOption has no setter for TransportMovement yet!
-        mainTransportSegment = OneRecordTypeConstants.createTransportMovement();
-        mainTransportSegment.setId("mainTransportSegment");
-
         mainShipment = OneRecordTypeConstants.createShipment();
         waybill.setShipment(mainShipment);
 
         mainPiece = OneRecordTypeConstants.createPiece();
-        mainPiece.setId("mainPiece");
-        mainPiece.setTransportMovements(buildSet(mainTransportSegment));
         mainShipment.setContainedPieces(buildSet(mainPiece));
 
         // Add the main carrier, as per AWB prefix
@@ -257,8 +251,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         mainAirline.setAirlinePrefix(waybill.getWaybillPrefix());
 
         // departure and destination
-        mainTransportSegment.setDepartureLocation(value(xmlMC.getOriginLocation()));
-        mainTransportSegment.setArrivalLocation(value(xmlMC.getFinalDestinationLocation()));
+        mainBooking.setBookingSegment(OneRecordTypeConstants.create(BookingSegment.class));
+        mainBooking.getBookingSegment().setDepartureLocation(value(xmlMC.getOriginLocation()));
+        mainBooking.getBookingSegment().setArrivalLocation(value(xmlMC.getFinalDestinationLocation()));
 
         // totalPieceCount
         mainShipment.setTotalPieceCount(integerValue(xmlMC.getTotalPieceQuantity()));
@@ -375,16 +370,6 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
             flights.add(tm);
         }
         if (!flights.isEmpty()) {
-            if (!mainPiece.getTransportMovements().isEmpty()) {
-                // **********************************
-                // **********************************
-                // ****** TODO
-                // ****** TODO
-                // ****** TODO
-                // **********************************
-                // **********************************
-                throw new RuntimeException("we can't add flights - we already have details added for the shipments");
-            }
             mainPiece.setTransportMovements(flights);
         }
     }
@@ -747,10 +732,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         }
         // ULDs
         if (!allULD.isEmpty()) {
-            if (mainTransportSegment.getTransportedUlds() == null) {
-                mainTransportSegment.setTransportedUlds(OneRecordTypeConstants.buildSet());
+            for (TransportMovement tm : mainPiece.getTransportMovements()) {
+                tm.setTransportedUlds(OneRecordTypeConstants.buildSet(allULD));
             }
-            mainTransportSegment.getTransportedUlds().addAll(allULD);
         }
         // Nature of Goods
         for (String s : nog) {

@@ -90,11 +90,11 @@ public class XFWB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("XX8012"));
         // The getDepartureEvent().getScheduledOccurrenceDateTime()
         // map to 1R MovementTimes "SD" in Ontology v1.2
-        Assertions.assertTrue(result.json.contains("MovementTimes#movementMilestone\" : \"SD\""));
-        Assertions.assertTrue(result.json.contains("MovementTimes#movementTimestamp\" : \"2021-03-10T00:00:0"));
+        Assertions.assertTrue(result.json.contains("movementMilestone\" : \"SD\""));
+        Assertions.assertTrue(result.json.contains("movementTimestamp\" : \"2021-03-10T00:00:00\""));
 
         Assertions.assertTrue(result.json.contains("XX345"));
-        Assertions.assertTrue(result.json.contains("MovementTimes#movementTimestamp\" : \"2021-03-12T00:00:0"));
+        Assertions.assertTrue(result.json.contains("movementTimestamp\" : \"2021-03-12T00:00:00\""));
         Assertions.assertTrue(result.json.contains("\"XX\""));
         Assertions.assertTrue(result.json.contains("DUB"));
         Assertions.assertTrue(result.json.contains("2021-03-10T00:00:00"));
@@ -119,17 +119,17 @@ public class XFWB3toOneRecordConverterTest {
         Assertions.assertTrue(result.json.contains("ED"));
         // Note: 1299 is converted into expiryDate
         Assertions.assertFalse(result.json.contains("1299"));
-        Assertions.assertTrue(result.json.contains("RegulatedEntity#expiryDate\" : \"2099-12-01T00:00:00\""));
+        Assertions.assertTrue(result.json.contains("expiryDate\" : \"2099-12-01T00:00:00\""));
         Assertions.assertTrue(result.json.contains("MR. SECURITY OFFICER"));
         // Note: 13APR211147 is converted into issuedOn" : "2021-04-13T11:47:00
         Assertions.assertFalse(result.json.contains("13APR211147"));
-        Assertions.assertTrue(result.json.contains("SecurityDeclaration#issuedOn\" : \"2021-04-13T11:47:00"));
+        Assertions.assertTrue(result.json.contains("issuedOn\" : \"2021-04-13T11:47:00\""));
 
         Assertions.assertTrue(result.json.contains("customsOriginCode\" : \"X\","));
 
         Assertions.assertTrue(result.json.contains("originCurrency\" : \"EUR\""));
 
-        Assertions.assertTrue(result.json.contains("chargePaymentType\" : [ \"P\" ]"));
+        Assertions.assertTrue(result.json.contains("chargePaymentType\" : \"P\""));
         Assertions.assertTrue(result.json.contains("entitlement\" : \"C\""));
         Assertions.assertTrue(result.json.contains("otherChargeCode\" : \"MC\""));
         Assertions.assertTrue(result.json.contains("subTotal\" : 1234.56"));
