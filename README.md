@@ -82,7 +82,7 @@ from `HouseWaybillType` into `org.iata.cargo.model.Waybill`.
 The converter library is not published on mavenCentral (yet).
 
 Nevertheless releases are available for download at https://github.com/riege/one-record-converter/releases 
-and it can be also integrated into a Java project as a depencency via https://jitpack.io:
+and it can be also integrated into a Java project as a depencency via https://jitpack.io/#riege/one-record-converter:
 
 [gradle](https://gradle.org/):
 
