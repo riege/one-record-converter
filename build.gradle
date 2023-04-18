@@ -94,8 +94,8 @@ dependencies {
     // github/riege internal dependency:
     //     implementation('com.riege:one-record-ontologymodel:2.0.1') { transitive = false }
 
-    implementation('com.github.riege:one-record-ontologydatamodel:0.2.3')
-    implementation('com.github.riege:one-record-jsonutils:0.9.2')
+    api('com.github.riege:one-record-ontologydatamodel:0.2.5')
+    api('com.github.riege:one-record-jsonutils:0.9.2')
 
     // cargoxml-jaxb from riege.com cannot be retrieved via https://jitpack.io
     // because building it requires access to the Cargo-XML Toolkit schema files
