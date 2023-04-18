@@ -2,9 +2,10 @@ package com.riege.onerecord.converter;
 
 import java.math.BigDecimal;
 
-import org.iata.cargo.model.Country;
-import org.iata.cargo.model.Location;
-import org.iata.cargo.model.Value;
+import org.iata.onerecord.cargo.model.Country;
+import org.iata.onerecord.cargo.model.Location;
+import org.iata.onerecord.cargo.model.Value;
+import org.iata.onerecord.cargo.util.ONERecordCargoUtil;
 
 import com.riege.cargoxml.schema.xfzb3.AmountType;
 import com.riege.cargoxml.schema.xfzb3.ArrivalLocationType;
@@ -43,7 +44,7 @@ public class XFZB3ParserHelper {
         if (measure == null || measure.getValue() == null) {
             return null;
         }
-        Value result = OneRecordTypeConstants.createValue();
+        Value result = ONERecordCargoUtil.create(Value.class);
         result.setUnit(measure.getUnitCode());
         result.setValue(measure.getValue().doubleValue());
         return result;
@@ -68,7 +69,7 @@ public class XFZB3ParserHelper {
         if (measure == null) {
             return null;
         }
-        Value result = OneRecordTypeConstants.createValue();
+        Value result = ONERecordCargoUtil.create(Value.class);
         result.setUnit(measure.getCurrencyID() == null ? defaultCurrency : measure.getCurrencyID().value());
         result.setValue(measure.getValue().doubleValue());
         return result;
@@ -108,7 +109,7 @@ public class XFZB3ParserHelper {
         if (locationCode == null) {
             return null;
         }
-        Location location = OneRecordTypeConstants.createLocation();
+        Location location = ONERecordCargoUtil.create(Location.class);
         location.setCode(value(locationCode));
         location.setLocationType(value(typeCode));
         location.setLocationName(value(locationName));
@@ -119,7 +120,7 @@ public class XFZB3ParserHelper {
         if (countryIDType == null) {
             return null;
         }
-        Country country = OneRecordTypeConstants.createCountry();
+        Country country = ONERecordCargoUtil.create(Country.class);
         country.setCountryCode(countryIDType.getValue().value());
         country.setCountryName(value(countryName));
         return country;

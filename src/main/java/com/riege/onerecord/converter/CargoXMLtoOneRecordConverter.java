@@ -1,9 +1,18 @@
 package com.riege.onerecord.converter;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.iata.cargo.model.LogisticsObject;
-import org.iata.cargo.model.Waybill;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.iata.onerecord.cargo.model.LogisticsObject;
 
 /**
  * Abstract superclass for converters into ONE Record type T
@@ -75,6 +84,33 @@ public abstract class CargoXMLtoOneRecordConverter<T extends LogisticsObject> {
 
     protected final void addError(String group, String text) {
         validationResult.addError(group, text);
+    }
+
+    // ***** Helper methods *****
+
+    protected static Date convertToDate(XMLGregorianCalendar gregorianCalendar) {
+        return gregorianCalendar.toGregorianCalendar().getTime();
+    }
+
+    protected static OffsetDateTime convertToOffsetDateTime(XMLGregorianCalendar xmlGregorianCalendar) {
+        GregorianCalendar gc = xmlGregorianCalendar.toGregorianCalendar() ;
+        ZonedDateTime zdt = gc.toZonedDateTime() ;
+        return convertToOffsetDateTime(zdt.toInstant());
+    }
+
+    protected static OffsetDateTime convertToOffsetDateTime(Date date) {
+        return convertToOffsetDateTime(date.toInstant());
+    }
+
+    protected static OffsetDateTime convertToOffsetDateTime(Instant instant) {
+        // ZoneOffset zoneOffset = ZoneOffset.UTC;
+        ZoneOffset zoneOffset = ZoneId.systemDefault().getRules().getOffset(instant);
+        OffsetDateTime odt = instant.atOffset( zoneOffset ) ;
+        return odt;
+    }
+
+    protected static OffsetDateTime convertToOffsetDateTime(Calendar calendar) {
+        return convertToOffsetDateTime(calendar.getTime());
     }
 
 }

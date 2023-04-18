@@ -5,53 +5,58 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.iata.cargo.codelists.ContactTypeCode;
-import org.iata.cargo.codelists.OtherIdentifierTypeCode;
-import org.iata.cargo.codelists.PartyRoleCode;
-import org.iata.cargo.codelists.WaybillTypeCode;
-import org.iata.cargo.model.Address;
-import org.iata.cargo.model.BookingOption;
-import org.iata.cargo.model.Carrier;
-import org.iata.cargo.model.Company;
-import org.iata.cargo.model.Contact;
-import org.iata.cargo.model.CustomsInfo;
-import org.iata.cargo.model.Dimensions;
-import org.iata.cargo.model.Insurance;
-import org.iata.cargo.model.Item;
-import org.iata.cargo.model.OtherIdentifier;
-import org.iata.cargo.model.Party;
-import org.iata.cargo.model.Person;
-import org.iata.cargo.model.Piece;
-import org.iata.cargo.model.SecurityDeclaration;
-import org.iata.cargo.model.Shipment;
-import org.iata.cargo.model.TransportSegment;
-import org.iata.cargo.model.ULD;
-import org.iata.cargo.model.Value;
-import org.iata.cargo.model.VolumetricWeight;
-import org.iata.cargo.model.Waybill;
+import org.iata.onerecord.cargo.codelists.ContactTypeCode;
+import org.iata.onerecord.cargo.codelists.OtherIdentifierTypeCode;
+import org.iata.onerecord.cargo.codelists.PartyRoleCode;
+import org.iata.onerecord.cargo.codelists.WaybillTypeCode;
+import org.iata.onerecord.cargo.model.Address;
+import org.iata.onerecord.cargo.model.Booking;
+import org.iata.onerecord.cargo.model.BookingOption;
+import org.iata.onerecord.cargo.model.BookingRequest;
+import org.iata.onerecord.cargo.model.Carrier;
+import org.iata.onerecord.cargo.model.Company;
+import org.iata.onerecord.cargo.model.CompanyBranch;
+import org.iata.onerecord.cargo.model.Contact;
+import org.iata.onerecord.cargo.model.CustomsInfo;
+import org.iata.onerecord.cargo.model.Dimensions;
+import org.iata.onerecord.cargo.model.Insurance;
+import org.iata.onerecord.cargo.model.Item;
+import org.iata.onerecord.cargo.model.Location;
+import org.iata.onerecord.cargo.model.OtherIdentifier;
+import org.iata.onerecord.cargo.model.Party;
+import org.iata.onerecord.cargo.model.Person;
+import org.iata.onerecord.cargo.model.Piece;
+import org.iata.onerecord.cargo.model.Product;
+import org.iata.onerecord.cargo.model.SecurityDeclaration;
+import org.iata.onerecord.cargo.model.Shipment;
+import org.iata.onerecord.cargo.model.TransportMovement;
+import org.iata.onerecord.cargo.model.ULD;
+import org.iata.onerecord.cargo.model.Value;
+import org.iata.onerecord.cargo.model.VolumetricWeight;
+import org.iata.onerecord.cargo.model.Waybill;
+import org.iata.onerecord.cargo.util.ONERecordCargoUtil;
 
-import com.riege.cargoxml.schema.xfzb3.ConsigneePartyType;
-import com.riege.cargoxml.schema.xfzb3.ConsignorPartyType;
-import com.riege.cargoxml.schema.xfzb3.StructuredAddressType;
-import com.riege.cargoxml.schema.xfzb3.TextType;
-import com.riege.cargoxml.schema.xfzb3.TradeContactType;
 import com.riege.cargoxml.schema.xfzb3.AuthenticationLocationType;
+import com.riege.cargoxml.schema.xfzb3.BusinessHeaderDocumentType;
 import com.riege.cargoxml.schema.xfzb3.CarrierAuthenticationType;
 import com.riege.cargoxml.schema.xfzb3.CodeType;
+import com.riege.cargoxml.schema.xfzb3.ConsigneePartyType;
 import com.riege.cargoxml.schema.xfzb3.ConsignorAuthenticationType;
+import com.riege.cargoxml.schema.xfzb3.ConsignorPartyType;
 import com.riege.cargoxml.schema.xfzb3.CustomsNoteType;
 import com.riege.cargoxml.schema.xfzb3.HouseConsignmentItemType;
 import com.riege.cargoxml.schema.xfzb3.HouseConsignmentType;
+import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
 import com.riege.cargoxml.schema.xfzb3.LogisticsPackageType;
-import com.riege.cargoxml.schema.xfzb3.SpatialDimensionType;
-import com.riege.cargoxml.schema.xfzb3.BusinessHeaderDocumentType;
 import com.riege.cargoxml.schema.xfzb3.MasterConsignmentType;
 import com.riege.cargoxml.schema.xfzb3.MessageHeaderDocumentType;
-import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
+import com.riege.cargoxml.schema.xfzb3.SpatialDimensionType;
+import com.riege.cargoxml.schema.xfzb3.StructuredAddressType;
+import com.riege.cargoxml.schema.xfzb3.TextType;
+import com.riege.cargoxml.schema.xfzb3.TradeContactType;
 import com.riege.cargoxml.schema.xfzb3.UnitLoadTransportEquipmentType;
 
 import static com.riege.onerecord.converter.ConverterUtil.isNullOrEmpty;
-import static com.riege.onerecord.converter.OneRecordTypeConstants.buildSet;
 import static com.riege.onerecord.converter.XFZB3ParserHelper.integerValue;
 import static com.riege.onerecord.converter.XFZB3ParserHelper.value;
 
@@ -62,7 +67,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     public XFZB3toOneRecordConverter(HouseWaybillType xfzb) {
         super();
 
-        waybill = OneRecordTypeConstants.createWaybill();
+        waybill = ONERecordCargoUtil.create(Waybill.class);
         convertData(xfzb);
     }
 
@@ -73,7 +78,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
     private BookingOption mainBooking;
     private Carrier mainAirline;
-    private TransportSegment mainTransportSegment;
+    private TransportMovement mainTransportSegment;
     private Shipment mainShipment;
     private Piece mainPiece;
 
@@ -99,22 +104,23 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
          */
         // mainBooking = OneRecordTypeConstants.createBooking();
         // waybill.setBookingRef(mainBooking);
-        mainBooking = OneRecordTypeConstants.createBookingOption();
-        waybill.setBooking(mainBooking);
+        mainBooking = ONERecordCargoUtil.create(BookingOption.class);
+        waybill.setBooking(ONERecordCargoUtil.create(Booking.class));
+        waybill.getBooking().setBookingRequest(ONERecordCargoUtil.create(BookingRequest.class));
+        waybill.getBooking().getBookingRequest().setBookingOption(mainBooking);
 
-        // NOTE: v1.1 is the last version which uses TransportSegment
-        //       will be replaced by TransportMovement in future versions
-        mainTransportSegment = OneRecordTypeConstants.createTransportSegment();
-        mainBooking.setTransportMovement(buildSet(mainTransportSegment));
+        // NOTE: BookingOption has no setter for TransportMovement yet!
+        mainTransportSegment = ONERecordCargoUtil.create(TransportMovement.class);
 
-        mainShipment = OneRecordTypeConstants.createShipment();
+        mainShipment = ONERecordCargoUtil.create(Shipment.class);
         mainBooking.setShipmentDetails(mainShipment);
 
-        mainPiece = OneRecordTypeConstants.createPiece();
-        mainTransportSegment.setTransportedPieces(buildSet(mainPiece));
+        mainPiece = ONERecordCargoUtil.create(Piece.class);
+        mainPiece.setTransportMovements(ONERecordCargoUtil.buildSet(mainTransportSegment));
+        mainShipment.setContainedPieces(ONERecordCargoUtil.buildSet(mainPiece));
 
         // Add the main carrier, as per AWB prefix
-        mainAirline = OneRecordTypeConstants.createCarrier();
+        mainAirline = ONERecordCargoUtil.create(Carrier.class);
         mainBooking.setCarrier(mainAirline);
 
         /*
@@ -125,7 +131,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         xmlBH = xfzb.getBusinessHeaderDocument();
         xmlHouse = xmlMC.getIncludedHouseConsignment();
 
-        waybill.setWaybillType(WaybillTypeCode.HOUSE);
+        waybill.setWaybillType(WaybillTypeCode.HOUSE.code());
         /*
          * Conversion is split by topic of the individual CIMP segments,
          * just to allow easier navigation though source code.
@@ -147,16 +153,17 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         CarrierAuthenticationType sigCarrier = xmlBH.getSignatoryCarrierAuthentication();
         if (sigCarrier != null) {
             waybill.setCarrierDeclarationSignature(value(sigCarrier.getSignatory()));
-            waybill.setCarrierDeclarationDate(sigCarrier.getActualDateTime().toGregorianCalendar().getTime());
+            waybill.setCarrierDeclarationDate(convertToOffsetDateTime(sigCarrier.getActualDateTime()));
             AuthenticationLocationType location = sigCarrier.getIssueAuthenticationLocation();
             if (location != null) {
-                waybill.setCarrierDeclarationPlace(OneRecordTypeConstants.createLocation());
+                waybill.setCarrierDeclarationPlace(ONERecordCargoUtil.create(Location.class));
                 waybill.getCarrierDeclarationPlace().setCode(value(location.getName()));
             }
         }
         ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
         if (sigConsignor != null) {
-            waybill.setConsignorDeclarationSignature(buildSet(value(sigConsignor.getSignatory())));
+            String singleEntry = value(sigConsignor.getSignatory());
+            waybill.setConsignorDeclarationSignature(ONERecordCargoUtil.buildSet(singleEntry));
         }
     }
 
@@ -197,7 +204,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             }
 
             if (mainPiece.getProduct() == null) {
-                mainPiece.setProduct(buildSet());
+                mainPiece.setProduct(ONERecordCargoUtil.buildSet());
             }
 
             if (hci.getOriginCountry() != null) {
@@ -213,16 +220,16 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                 if (xmlDim == null) {
                     continue;
                 }
-                Dimensions dim1R = OneRecordTypeConstants.createDimensions();
+                Dimensions dim1R = ONERecordCargoUtil.create(Dimensions.class);
                 dim1R.setHeight(value(xmlDim.getHeightMeasure()));
                 dim1R.setLength(value(xmlDim.getLengthMeasure()));
                 dim1R.setWidth(value(xmlDim.getWidthMeasure()));
-                Item item = OneRecordTypeConstants.createItem();
+                Item item = ONERecordCargoUtil.create(Item.class);
                 // "Product" is mandatory for item as per Ontology
-                item.setProduct(OneRecordTypeConstants.createProduct());
+                item.setProduct(ONERecordCargoUtil.create(Product.class));
                 item.setDimensions(dim1R);
                 item.setWeight(value(lp.getGrossWeightMeasure()));
-                Value count = OneRecordTypeConstants.createValue();
+                Value count = ONERecordCargoUtil.create(Value.class);
                 count.setValue(Double.valueOf(xmlPackageCount));
                 item.setQuantity(count);
                 allDims.add(item);
@@ -230,7 +237,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
             UnitLoadTransportEquipmentType xmlULD = hci.getAssociatedUnitLoadTransportEquipment();
             if (xmlULD != null) {
-                ULD uld1R = OneRecordTypeConstants.createULD();
+                ULD uld1R = ONERecordCargoUtil.create(ULD.class);
                 uld1R.setSerialNumber(value(xmlULD.getID()));
                 uld1R.setTareWeight(value(xmlULD.getTareWeightMeasure()));
                 uld1R.setUldTypeCode(value(xmlULD.getCharacteristicCode()));
@@ -252,11 +259,11 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         // adding now:
         if (!hts.isEmpty()) {
             if (mainPiece.getContainedItems() == null) {
-                mainPiece.setContainedItems(buildSet());
+                mainPiece.setContainedItems(ONERecordCargoUtil.buildSet());
             }
             for (String hsCode : hts) {
-                Item item = OneRecordTypeConstants.createItem();
-                item.setProduct(OneRecordTypeConstants.createProduct());
+                Item item = ONERecordCargoUtil.create(Item.class);
+                item.setProduct(ONERecordCargoUtil.create(Product.class));
                 item.getProduct().setHsCode(hsCode);
                 mainPiece.getContainedItems().add(item);
             }
@@ -264,14 +271,14 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         // Dimensions
         if (!allDims.isEmpty()) {
             if (mainPiece.getContainedItems() == null) {
-                mainPiece.setContainedItems(OneRecordTypeConstants.buildSet());
+                mainPiece.setContainedItems(ONERecordCargoUtil.buildSet());
             }
             mainPiece.getContainedItems().addAll(allDims);
         }
         // ULDs
         if (!allULD.isEmpty()) {
             if (mainTransportSegment.getTransportedUlds() == null) {
-                mainTransportSegment.setTransportedUlds(OneRecordTypeConstants.buildSet());
+                mainTransportSegment.setTransportedUlds(ONERecordCargoUtil.buildSet());
             }
             mainTransportSegment.getTransportedUlds().addAll(allULD);
         }
@@ -298,13 +305,13 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         mainPiece.setGrossWeight(mainShipment.getTotalGrossWeight());
         addHint(VG_INFORMATION, "(Total)GrossWeight is mandatory on Shipment and on Piece, value from MasterConsignment/IncludedTareGrossWeightMeasure is used for both");
 
-        VolumetricWeight volumetricWeight = OneRecordTypeConstants.createVolumetricWeight();
+        VolumetricWeight volumetricWeight = ONERecordCargoUtil.create(VolumetricWeight.class);
         volumetricWeight.setChargeableWeight(mainShipment.getTotalGrossWeight());
-        mainShipment.setVolumetricWeight(buildSet(volumetricWeight));
+        mainShipment.setVolumetricWeight(ONERecordCargoUtil.buildSet(volumetricWeight));
 
         // totalVolume
         if (xmlHouse.getGrossVolumeMeasure() != null) {
-            Dimensions volume = OneRecordTypeConstants.createDimensions();
+            Dimensions volume = ONERecordCargoUtil.create(Dimensions.class);
             volume.setVolume(value(xmlHouse.getGrossVolumeMeasure()));
             mainPiece.setDimensions(volume);
         }
@@ -319,7 +326,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         if (isNullOrEmpty(xmlHouse.getIncludedCustomsNote())) {
             return;
         }
-        SecurityDeclaration secDec = OneRecordTypeConstants.createSecurityDeclaration();
+        SecurityDeclaration secDec = ONERecordCargoUtil.create(SecurityDeclaration.class);
         String previousCiSubjectCode = "X";
         boolean haveSecDec = false;
         boolean haveCTCP = false;
@@ -337,7 +344,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             String countryCode = xmlCustNote.getCountryID() == null
                 ? null
                 : value(xmlCustNote.getCountryID(), null).getCountryCode();
-            CustomsInfo custInfo = OneRecordTypeConstants.createCustomsInfo();
+            CustomsInfo custInfo = ONERecordCargoUtil.create(CustomsInfo.class);
 
             custInfo.setCustomsInfoContentCode(contentCode);
             custInfo.setCustomsInfoCountryCode(countryCode);
@@ -374,7 +381,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                 );
             } else {
                 if (mainPiece.getCustomsInfo() == null) {
-                    mainPiece.setCustomsInfo(OneRecordTypeConstants.buildSet());
+                    mainPiece.setCustomsInfo(ONERecordCargoUtil.buildSet());
                 }
                 mainPiece.getCustomsInfo().add(custInfo);
             }
@@ -383,7 +390,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             }
         }
         if (haveSecDec) {
-            mainPiece.setSecurityStatus(secDec);
+            mainPiece.setSecurityDeclaration(secDec);
         }
     }
 
@@ -393,7 +400,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     private void convertCIMPSegment07() {
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment05:
         if (mainBooking.getParties() == null) {
-            mainBooking.setParties(buildSet());
+            mainBooking.setParties(ONERecordCargoUtil.buildSet());
         }
         mainBooking.getParties().add(createParty(
             PartyRoleCode.SHP,
@@ -408,7 +415,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     private void convertCIMPSegment08() {
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment06:
         if (mainBooking.getParties() == null) {
-            mainBooking.setParties(buildSet());
+            mainBooking.setParties(ONERecordCargoUtil.buildSet());
         }
         mainBooking.getParties().add(createParty(
             PartyRoleCode.CNE,
@@ -450,16 +457,16 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     }
 
     private Party createParty(PartyRoleCode partyRole, Company company, String accountID) {
-        Party party = OneRecordTypeConstants.createParty();
-        party.setPartyRole(partyRole);
+        Party party = ONERecordCargoUtil.create(Party.class);
+        party.setPartyRole(partyRole.code());
         party.setPartyDetails(company);
         if (accountID != null) {
             // See https://github.com/IATA-Cargo/ONE-Record/issues/130
-            OtherIdentifier oi = OneRecordTypeConstants.createOtherIdentifier();
-            oi.setOtherIdentifierType(OtherIdentifierTypeCode.ACCOUNT_ID);
+            OtherIdentifier oi = ONERecordCargoUtil.create(OtherIdentifier.class);
+            oi.setOtherIdentifierType(OtherIdentifierTypeCode.ACCOUNT_ID.code());
             oi.setOtherIdentifierType("AccountID");
             oi.setIdentifier(accountID);
-            party.setOtherIdentifiers(buildSet(oi));
+            party.setOtherIdentifiers(ONERecordCargoUtil.buildSet(oi));
         }
         return party;
     }
@@ -468,11 +475,11 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         if (xmlAddress == null) {
             return null;
         }
-        Company company = OneRecordTypeConstants.createCompany();
+        Company company = ONERecordCargoUtil.create(Company.class);
         Address address = prepareCompanyAddress(company);
         String street = value(xmlAddress.getStreetName());
         if (street != null) {
-            address.setStreet(buildSet(street.split("\n")));
+            address.setStreet(ONERecordCargoUtil.buildSet(street.split("\n")));
         }
         address.setCityName(value(xmlAddress.getCityName()));
         address.setPostalCode(value(xmlAddress.getPostcodeCode()));
@@ -481,20 +488,20 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     }
     static Address prepareCompanyAddress(Company company) {
         if (company.getBranch() == null) {
-            company.setBranch(OneRecordTypeConstants.createCompanyBranch());
+            company.setBranch(ONERecordCargoUtil.create(CompanyBranch.class));
         }
         if (company.getBranch().getLocation() == null) {
-            company.getBranch().setLocation(OneRecordTypeConstants.createLocation());
+            company.getBranch().setLocation(ONERecordCargoUtil.create(Location.class));
         }
         if (company.getBranch().getLocation().getAddress() == null) {
-            company.getBranch().getLocation().setAddress(OneRecordTypeConstants.createAddress());
+            company.getBranch().getLocation().setAddress(ONERecordCargoUtil.create(Address.class));
         }
         return company.getBranch().getLocation().getAddress();
     }
 
     private Contact createContact(ContactTypeCode type, String value) {
-        Contact contact = OneRecordTypeConstants.createContact();
-        contact.setContactType(type);
+        Contact contact = ONERecordCargoUtil.create(Contact.class);
+        contact.setContactType(type.code());
         contact.setContactValue(value);
         return contact;
     }
@@ -516,7 +523,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             company.getBranch().setBranchName(name);
         }
 
-        final Person person = OneRecordTypeConstants.createPerson();
+        final Person person = ONERecordCargoUtil.create(Person.class);
         String phone = null;
         String fax = null;
         String mail = null;
@@ -559,7 +566,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             }
         }
         if (haveContact) {
-            person.setContact(buildSet());
+            person.setContact(ONERecordCargoUtil.buildSet());
             if (phone != null) {
                 person.getContact().add(createContact(ContactTypeCode.PHONE, phone));
             }
@@ -569,7 +576,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             if (mail != null) {
                 person.getContact().add(createContact(ContactTypeCode.EMAIL, mail));
             }
-            company.getBranch().setContactPersons(buildSet(person));
+            company.getBranch().setContactPersons(ONERecordCargoUtil.buildSet(person));
         }
         return company;
     }
@@ -598,7 +605,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         }
 
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment11:
-        Insurance insurance = OneRecordTypeConstants.createInsurance();
+        Insurance insurance = ONERecordCargoUtil.create(Insurance.class);
         insurance.setNvdIndicator(xmlHouse.isNilInsuranceValueIndicator());
         boolean isNilInsurance = xmlHouse.isNilInsuranceValueIndicator() != null && xmlHouse.isNilInsuranceValueIndicator();
         if (!isNilInsurance) {
@@ -610,17 +617,17 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         mainPiece.setNvdForCarriage(xmlHouse.isNilCarriageValueIndicator());
         boolean isNilCarriage = xmlHouse.isNilCarriageValueIndicator() != null && xmlHouse.isNilCarriageValueIndicator();
         if (!isNilCarriage) {
-            mainPiece.setDeclaredValueForCarriage(buildSet(
+            mainPiece.setDeclaredValueForCarriage(
                 xmlHouse.getDeclaredValueForCarriageAmount().getValue().toString()
-            ));
+            );
         }
 
         mainPiece.setNvdForCustoms(xmlHouse.isNilCustomsValueIndicator());
         boolean isNilCustoms = xmlHouse.isNilCustomsValueIndicator() != null && xmlHouse.isNilCustomsValueIndicator();
         if (!isNilCustoms) {
-            mainPiece.setDeclaredValueForCustoms(buildSet(
+            mainPiece.setDeclaredValueForCustoms(
                 xmlHouse.getDeclaredValueForCustomsAmount().getValue().toString()
-            ));
+            );
         }
     }
 
