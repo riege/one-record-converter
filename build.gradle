@@ -117,10 +117,17 @@ shadowJar {
     // the default shadowJar task will output a file at:
     // build/libs/myApp-1.0-all.jar
     //
-    // to remove the '-all', we set archiveClassifier to null:
+    // to remove the '-all', we set archiveClassifier to null (or "")
     archiveClassifier = null
 }
 build.dependsOn(shadowJar)
+
+/*
+ * With the following line, some build just fail with
+ *
+ * Reason: Task ':publishShadowPublicationToMavenLocal' uses this output of task ':jar' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed.
+ */
+shadowJar.dependsOn(jar)
 
 repositories {
     flatDir dirs: "$rootProject.projectDir/lib"
@@ -139,8 +146,8 @@ repositories {
 
 publishing {
     publications {
-        shadow(MavenPublication) {
-            publication -> project.shadow.component(publication)
+        shadow(MavenPublication) { publication ->
+            from project.shadow.component(publication)
             groupId group
             pom {
                 name = implTitle
