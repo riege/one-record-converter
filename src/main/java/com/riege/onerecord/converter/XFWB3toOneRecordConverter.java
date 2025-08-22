@@ -420,54 +420,53 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     // CIMP FWB Segment 5: Shipper (M)
     // *************************************************************************
     private void convertCIMPSegment05() {
-        if (mainBooking.getParties() == null) {
-            mainBooking.setParties(ONERecordCargoUtil.buildSet());
+        if (mainShipment.getInvolvedParties() == null) {
+            mainShipment.setInvolvedParties(ONERecordCargoUtil.buildSet());
         }
-        mainBooking.getParties().add(createParty(
+        mainShipment.getInvolvedParties().add(createParty(
             PartyRoleCode.SHP,
             xmlMC.getConsignorParty(),
-            getCustomsNotesBySubjectCode("SHP")
-        ));
+            getCustomsNotesBySubjectCode("SHP")));
     }
 
     // *************************************************************************
     // CIMP FWB Segment 6: Consignee (M)
     // *************************************************************************
     private void convertCIMPSegment06() {
-        if (mainBooking.getParties() == null) {
-            mainBooking.setParties(ONERecordCargoUtil.buildSet());
+        if (mainShipment.getInvolvedParties() == null) {
+            mainShipment.setInvolvedParties(ONERecordCargoUtil.buildSet());
         }
-        mainBooking.getParties().add(createParty(
+        mainShipment.getInvolvedParties().add(createParty(
             PartyRoleCode.CNE,
             xmlMC.getConsigneeParty(),
-            getCustomsNotesBySubjectCode("CNE")
-        ));
+            getCustomsNotesBySubjectCode("CNE")));
     }
 
     // *************************************************************************
     // CIMP FWB Segment 7: (Export) Agent (C: if entitled to commission)
     // *************************************************************************
     private void convertCIMPSegment07() {
+
         FreightForwarderPartyType xmlForwarder = xmlMC.getFreightForwarderParty();
         if (xmlForwarder != null) {
-            if (mainBooking.getParties() == null) {
-                mainBooking.setParties(ONERecordCargoUtil.buildSet());
+            if (mainShipment.getInvolvedParties() == null) {
+                mainShipment.setInvolvedParties(ONERecordCargoUtil.buildSet());
             }
             Party ffw = createParty(
                 PartyRoleCode.FFW,
                 xmlForwarder,
-                getCustomsNotesBySubjectCode("AGT")
-            );
-            mainBooking.getParties().add(ffw);
+                getCustomsNotesBySubjectCode("AGT"));
+            mainShipment.getInvolvedParties().add(ffw);
 
             String value;
             value = value(xmlForwarder.getCargoAgentID());
+            Company partyDetails = (Company) ffw.getPartyDetails();
             if (value != null) {
                 if (!value.matches("[0-9]+")) {
                     addError(VG_XMLDATAERROR,
                         "FreightForwarderParty/CargoAgentID '" + value + "' not matching expected number format");
                 } else {
-                    ffw.getPartyDetails().setIataCargoAgentCode(value);
+                    partyDetails.setIataCargoAgentCode(value);
                 }
             }
             if (xmlForwarder.getSpecifiedCargoAgentLocation() != null) {
@@ -476,7 +475,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     addError(VG_XMLDATAERROR,
                         "FreightForwarderParty/SpecifiedCargoAgentLocation/ID '" + value + "' not matching expected number format");
                 } else {
-                    ffw.getPartyDetails().getBranch().setIataCargoAgentLocationIdentifier(value);
+                    partyDetails.setIataCargoAgentLocationIdentifier(value);
                 }
             }
         }
@@ -515,20 +514,23 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     private void convertCIMPSegment09and26and28() {
         List<AssociatedPartyType> xmlNotifies = xmlMC.getAssociatedParty();
         if (xmlNotifies != null) {
+            if (mainShipment.getInvolvedParties() == null) {
+                mainShipment.setInvolvedParties(ONERecordCargoUtil.buildSet());
+            }
             for (AssociatedPartyType party : xmlNotifies) {
                 String xmlRoleCode = party.getRoleCode() != null && party.getRoleCode().getValue() != null
                     ? party.getRoleCode().getValue().value()
                     : null;
                 if ("NI".equals(xmlRoleCode)) {
-                    mainBooking.getParties().add(createParty(
+                    mainShipment.getInvolvedParties().add(createParty(
                         PartyRoleCode.NFY, party, getCustomsNotesBySubjectCode(xmlRoleCode)
                     ));
                 } else if ("FB".equals(xmlRoleCode)) {
-                    mainBooking.getParties().add(createParty(
+                    mainShipment.getInvolvedParties().add(createParty(
                         PartyRoleCode.NOM, party, getCustomsNotesBySubjectCode(xmlRoleCode)
                     ));
                 } else if ("OJ".equals(xmlRoleCode)) {
-                    mainBooking.getParties().add(createParty(
+                    mainShipment.getInvolvedParties().add(createParty(
                         PartyRoleCode.OPI, party, getCustomsNotesBySubjectCode(xmlRoleCode)
                     ));
                 } else {
@@ -1347,14 +1349,16 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
 
     private Party createParty(PartyRoleCode partyRole, Company company, String accountID) {
         Party party = ONERecordCargoUtil.create(Party.class);
-        party.setPartyRole(partyRole.code());
+        ParticipantIdentifier pi = ONERecordCargoUtil.create(ParticipantIdentifier.class);
+        pi.setId(determinePartyRoleCodeIRI(partyRole.code()));
+        party.setPartyRole(pi);
         party.setPartyDetails(company);
         if (accountID != null) {
             // See https://github.com/IATA-Cargo/ONE-Record/issues/130
             OtherIdentifier oi = ONERecordCargoUtil.create(OtherIdentifier.class);
             oi.setOtherIdentifierType(OtherIdentifierTypeCode.ACCOUNT_ID.code());
             oi.setOtherIdentifierType("AccountID");
-            oi.setIdentifier(accountID);
+            oi.setTextualValue(accountID);
             party.setOtherIdentifiers(ONERecordCargoUtil.buildSet(oi));
         }
         return party;
