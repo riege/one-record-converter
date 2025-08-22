@@ -856,41 +856,44 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         for (PrepaidCollectMonetarySummationType summary : xmlTR.getApplicablePrepaidCollectMonetarySummation()) {
             // in the sequence they appear on the AWB, with the names used in CXML XFWB
             if (summary.getWeightChargeTotalAmount() != null) {
-                mainShipment.setWeightValuationIndicator(summary.isPrepaidIndicator() ? "P" : "C");
-                Value value = value(summary.getWeightChargeTotalAmount(), awbCurrency);
+                CurrencyValue value = value(summary.getWeightChargeTotalAmount(), awbCurrency);
                 addTotalAmountRating(BillingChargeCode.TOTAL_WEIGHT_CHARGE, summary.isPrepaidIndicator(), value);
             }
             if (summary.getValuationChargeTotalAmount() != null) {
-                Value value = value(summary.getValuationChargeTotalAmount(), awbCurrency);
+                CurrencyValue value = value(summary.getValuationChargeTotalAmount(), awbCurrency);
                 addTotalAmountRating(BillingChargeCode.VALUATION_CHARGE, summary.isPrepaidIndicator(), value);
             }
             if (summary.getTaxTotalAmount() != null) {
-                Value value = value(summary.getTaxTotalAmount(), awbCurrency);
+                CurrencyValue value = value(summary.getTaxTotalAmount(), awbCurrency);
                 addTotalAmountRating(BillingChargeCode.TAXES, summary.isPrepaidIndicator(), value);
             }
             if (summary.getAgentTotalDuePayableAmount() != null) {
-                Value value = value(summary.getAgentTotalDuePayableAmount(), awbCurrency);
+                CurrencyValue value = value(summary.getAgentTotalDuePayableAmount(), awbCurrency);
                 addTotalAmountRating(BillingChargeCode.TOTAL_OTHER_CHARGES_DUE_AGENT, summary.isPrepaidIndicator(), value);
             }
             if (summary.getCarrierTotalDuePayableAmount() != null) {
-                Value value = value(summary.getCarrierTotalDuePayableAmount(), awbCurrency);
+                CurrencyValue value = value(summary.getCarrierTotalDuePayableAmount(), awbCurrency);
                 addTotalAmountRating(BillingChargeCode.TOTAL_OTHER_CHARGES_DUE_CARRIER, summary.isPrepaidIndicator(), value);
             }
             if (summary.getGrandTotalAmount() != null) {
-                Value value = value(summary.getGrandTotalAmount(), awbCurrency);
-                mainBooking.getPrice().setGrandTotal(value.getValue());
+                CurrencyValue value = value(summary.getGrandTotalAmount(), awbCurrency);
+                mainBooking.getPrice().setGrandTotal(value.getNumericalValue());
             }
         }
     }
 
-    private void addTotalAmountRating(BillingChargeCode type, boolean isPrepaid, Value value) {
+    private void addTotalAmountRating(BillingChargeCode type, boolean isPrepaid, CurrencyValue value) {
         Ratings totalAmount = ONERecordCargoUtil.create(Ratings.class);
-        totalAmount.setBillingChargeIdentifier(type.code());
-        totalAmount.setChargePaymentType(isPrepaid ? "P" : "C");
-        totalAmount.setSubTotal(value.getValue().doubleValue());
-        if (value.getUnit() != null) {
+        ChargeIdentifier ci = ONERecordCargoUtil.create(ChargeIdentifier.class);
+        ci.setId(Vocabulary.s_c_ChargeIdentifier + "_" + type.code());
+        totalAmount.setBillingChargeIdentifier(ci);
+        PrepaidCollectIndicator pci = ONERecordCargoUtil.create(PrepaidCollectIndicator.class);
+        pci.setId(Vocabulary.s_c_PrepaidCollectIndicator + "_" + (isPrepaid ? "P" : "C"));
+        totalAmount.setChargePaymentType(pci);
+        totalAmount.setSubTotal(value.getNumericalValue());
+        if (value.getCurrencyUnit() != null) {
             Ranges ranges = ONERecordCargoUtil.create(Ranges.class);
-            ranges.setUnitBasis(value.getUnit());
+            ranges.setUnitBasis(value.getCurrencyUnit().getId().substring(value.getCurrencyUnit().getId().lastIndexOf("_") + 1));
             totalAmount.setRanges(ONERecordCargoUtil.buildSet(ranges));
         }
         mainBooking.getPrice().getRatings().add(totalAmount);
