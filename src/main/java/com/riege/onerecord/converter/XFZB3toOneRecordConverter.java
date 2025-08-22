@@ -424,10 +424,10 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     // *************************************************************************
     private void convertCIMPSegment07() {
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment05:
-        if (mainBooking.getParties() == null) {
-            mainBooking.setParties(ONERecordCargoUtil.buildSet());
+        if (mainShipment.getInvolvedParties() == null) {
+            mainShipment.setInvolvedParties(ONERecordCargoUtil.buildSet());
         }
-        mainBooking.getParties().add(createParty(
+        mainShipment.getInvolvedParties().add(createParty(
             PartyRoleCode.SHP,
             xmlHouse.getConsignorParty(),
             getCustomsNotesBySubjectCode("SHP")
@@ -439,10 +439,10 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     // *************************************************************************
     private void convertCIMPSegment08() {
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment06:
-        if (mainBooking.getParties() == null) {
-            mainBooking.setParties(ONERecordCargoUtil.buildSet());
+        if (mainShipment.getInvolvedParties() == null) {
+            mainShipment.setInvolvedParties(ONERecordCargoUtil.buildSet());
         }
-        mainBooking.getParties().add(createParty(
+        mainShipment.getInvolvedParties().add(createParty(
             PartyRoleCode.CNE,
             xmlHouse.getConsigneeParty(),
             getCustomsNotesBySubjectCode("CNE")
@@ -483,14 +483,16 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
     private Party createParty(PartyRoleCode partyRole, Company company, String accountID) {
         Party party = ONERecordCargoUtil.create(Party.class);
-        party.setPartyRole(partyRole.code());
+        ParticipantIdentifier pi = ONERecordCargoUtil.create(ParticipantIdentifier.class);
+        pi.setId(determinePartyRoleCodeIRI(partyRole.code()));
+        party.setPartyRole(pi);
         party.setPartyDetails(company);
         if (accountID != null) {
             // See https://github.com/IATA-Cargo/ONE-Record/issues/130
             OtherIdentifier oi = ONERecordCargoUtil.create(OtherIdentifier.class);
             oi.setOtherIdentifierType(OtherIdentifierTypeCode.ACCOUNT_ID.code());
             oi.setOtherIdentifierType("AccountID");
-            oi.setIdentifier(accountID);
+            oi.setTextualValue(accountID);
             party.setOtherIdentifiers(ONERecordCargoUtil.buildSet(oi));
         }
         return party;
@@ -504,30 +506,30 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         Address address = prepareCompanyAddress(company);
         String street = value(xmlAddress.getStreetName());
         if (street != null) {
-            address.setStreet(ONERecordCargoUtil.buildSet(street.split("\n")));
+            address.setStreetAddressLines(ONERecordCargoUtil.buildSet(street.split("\n")));
         }
         address.setCityName(value(xmlAddress.getCityName()));
-        address.setPostalCode(value(xmlAddress.getPostcodeCode()));
+        CodeListElement postalCodeCLE = createCodeListElementGeneral(value(xmlAddress.getPostcodeCode()));
+        address.setPostalCode(postalCodeCLE);
         address.setCountry(value(xmlAddress.getCountryID(), xmlAddress.getCountryName()));
         return company;
     }
     static Address prepareCompanyAddress(Company company) {
-        if (company.getBranch() == null) {
-            company.setBranch(ONERecordCargoUtil.create(CompanyBranch.class));
+        if (company.getBasedAtLocation() == null) {
+            company.setBasedAtLocation(ONERecordCargoUtil.create(Location.class));
         }
-        if (company.getBranch().getLocation() == null) {
-            company.getBranch().setLocation(ONERecordCargoUtil.create(Location.class));
+        if (company.getBasedAtLocation().getAddress() == null) {
+            company.getBasedAtLocation().setAddress(ONERecordCargoUtil.create(Address.class));
         }
-        if (company.getBranch().getLocation().getAddress() == null) {
-            company.getBranch().getLocation().setAddress(ONERecordCargoUtil.create(Address.class));
-        }
-        return company.getBranch().getLocation().getAddress();
+        return company.getBasedAtLocation().getAddress();
     }
 
-    private Contact createContact(ContactTypeCode type, String value) {
-        Contact contact = ONERecordCargoUtil.create(Contact.class);
-        contact.setContactType(type.code());
-        contact.setContactValue(value);
+    private ContactDetail createContact(ContactTypeCode type, String value) {
+        ContactDetail contact = ONERecordCargoUtil.create(ContactDetail.class);
+        ContactDetailType contactDetailType = ONERecordCargoUtil.create(ContactDetailType.class);
+        contactDetailType.setCode(type.code());
+        contact.setContactDetailType(contactDetailType);
+        contact.setTextualValue(value);
         return contact;
     }
     private Company enhanceCompany(PartyRoleCode partyRole,
@@ -540,12 +542,9 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         String name = value(xmlName);
         if (name != null && name.contains("\n")) {
             String[] array = name.split("\n");
-            company.setCompanyName(array[0]);
-            // company.getBranch().setBranchName(array[1]);
-            company.getBranch().setBranchName(name);
+            company.setName(array[0]);
         } else {
-            company.setCompanyName(name);
-            company.getBranch().setBranchName(name);
+            company.setName(name);
         }
 
         final Person person = ONERecordCargoUtil.create(Person.class);
@@ -591,17 +590,17 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             }
         }
         if (haveContact) {
-            person.setContact(ONERecordCargoUtil.buildSet());
+            person.setContactDetails(ONERecordCargoUtil.buildSet());
             if (phone != null) {
-                person.getContact().add(createContact(ContactTypeCode.PHONE, phone));
+                person.getContactDetails().add(createContact(ContactTypeCode.PHONE, phone));
             }
             if (fax != null) {
-                person.getContact().add(createContact(ContactTypeCode.FAX, fax));
+                person.getContactDetails().add(createContact(ContactTypeCode.FAX, fax));
             }
             if (mail != null) {
-                person.getContact().add(createContact(ContactTypeCode.EMAIL, mail));
+                person.getContactDetails().add(createContact(ContactTypeCode.EMAIL, mail));
             }
-            company.getBranch().setContactPersons(ONERecordCargoUtil.buildSet(person));
+            company.setContactPersons(ONERecordCargoUtil.buildSet(person));
         }
         return company;
     }
