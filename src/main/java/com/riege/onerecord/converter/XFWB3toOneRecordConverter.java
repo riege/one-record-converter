@@ -955,7 +955,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         DestinationCurrencyExchangeType destCux = xmlMC.getApplicableDestinationCurrencyExchange();
         if (destCux != null) {
             if (destCux.getTargetCurrencyCode() != null) {
-                waybill.setDestinationCurrencyCode(value(destCux.getTargetCurrencyCode()));
+                CodeListElement destinationCurrencyCode =
+                    createCodeListElementGeneral(value(destCux.getTargetCurrencyCode()));
+                waybill.setDestinationCurrencyCode(destinationCurrencyCode);
             }
             if (destCux.getConversionRate() != null) {
                 waybill.setDestinationCurrencyRate(destCux.getConversionRate().doubleValue());
