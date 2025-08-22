@@ -783,39 +783,51 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         //        "For other charges determined from \"<ApplicableLogisticsAllowanceCharge>\", "
         //            + "we apply a 1R charge type value \"Surcharge\"");
         //}
+        mainBooking.setPrice(ONERecordCargoUtil.create(Price.class));
+        mainBooking.getPrice().setRatings(ONERecordCargoUtil.buildSet());
         for (LogisticsAllowanceChargeType xmlLAC : xmlMC.getApplicableLogisticsAllowanceCharge()) {
             Ratings otherCharge = ONERecordCargoUtil.create(Ratings.class);
             // Ratings:chargeType is unresticted free text in Ontology 1.2
             // In 2022-May Ontology, the field becomes optional, we skip it:
             // https://github.com/IATA-Cargo/ONE-Record/issues/92#issuecomment-1041301746
             // otherCharge.setChargeType("Surcharge");
-            otherCharge.setOtherChargeCode(value(xmlLAC.getID()));
+            OtherChargeCode occ = ONERecordCargoUtil.create(OtherChargeCode.class);
+            occ.setId(Vocabulary.s_c_OtherChargeCode + "_" + value(xmlLAC.getID()));
+            otherCharge.setOtherChargeCode(occ);
             // "due" (aka Entitlement) in Ratings as per
             // #116 https://github.com/IATA-Cargo/ONE-Record/issues/116
-            otherCharge.setEntitlement(value(xmlLAC.getPartyTypeCode()));
-            otherCharge.setChargePaymentType(xmlLAC.isPrepaidIndicator() ? "P" : "C");
+            EntitlementCode ec = ONERecordCargoUtil.create(EntitlementCode.class);
+            ec.setId(Vocabulary.s_c_EntitlementCode + "_" + value(xmlLAC.getPartyTypeCode()));
+            otherCharge.setEntitlement(ec);
 
-            Value amount = value(xmlLAC.getActualAmount(), awbCurrency);
-            otherCharge.setSubTotal(amount.getValue().doubleValue());
-            if (amount.getUnit() != null) {
+            CurrencyValue amount = value(xmlLAC.getActualAmount(), awbCurrency);
+            otherCharge.setSubTotal(amount.getNumericalValue());
+            if (amount.getCurrencyUnit() != null) {
                 Ranges ranges = ONERecordCargoUtil.create(Ranges.class);
-                ranges.setUnitBasis(amount.getUnit());
+                String currencyUnitIRI = amount.getCurrencyUnit().getId();
+                ranges.setUnitBasis(currencyUnitIRI.substring(currencyUnitIRI.lastIndexOf("_") + 1));
                 otherCharge.setRanges(ONERecordCargoUtil.buildSet(ranges));
             }
 
             othIsPrepaid |= xmlLAC.isPrepaidIndicator();
             othIsCollect |= !xmlLAC.isPrepaidIndicator();
+            String otherChargePrepaidIndicator = "";
+
+            if (othIsPrepaid && othIsCollect) {
+                addError(VG_XMLDATAERROR,
+                    "ApplicableLogisticsAllowanceCharge contains Prepaid and Collect charges - all other charges are required to be of same type");
+                otherChargePrepaidIndicator = "P+C";
+            } else if (othIsCollect) {
+                otherChargePrepaidIndicator = "C";
+            } else if (othIsPrepaid) {
+                otherChargePrepaidIndicator = "P";
+            }
+
+            PrepaidCollectIndicator pci = ONERecordCargoUtil.create(PrepaidCollectIndicator.class);
+            pci.setId(Vocabulary.s_c_PrepaidCollectIndicator + "_" + otherChargePrepaidIndicator);
+            otherCharge.setChargePaymentType(pci);
 
             mainBooking.getPrice().getRatings().add(otherCharge);
-        }
-        if (othIsPrepaid && othIsCollect) {
-            addError(VG_XMLDATAERROR,
-                "ApplicableLogisticsAllowanceCharge contains Prepaid and Collect charges - all other charges are required to be of same type");
-            mainShipment.setOtherChargesIndicator("P+C");
-        } else if (othIsCollect) {
-            mainShipment.setOtherChargesIndicator("C");
-        } else if (othIsPrepaid) {
-            mainShipment.setOtherChargesIndicator("P");
         }
     }
 
