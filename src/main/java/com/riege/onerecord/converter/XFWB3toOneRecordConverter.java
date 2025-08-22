@@ -1157,95 +1157,103 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         }
     }
 
-    static boolean updateSecurityDeclaration(CustomsInfo ci, SecurityDeclaration secDec,
+    static boolean updateSecurityDeclaration(CustomsInformation ci, SecurityDeclaration secDec,
         String previousCiSubjectCode)
     {
         // ISS = "Issuing" Security Status = issuing
         // OSS = "Receiving" Security Status = accepting
-        if ("ISS".equals(ci.getCustomsInfoSubjectCode())) {
+        if ("ISS".equals(ci.getSubjectCode().getCode())) {
             secDec.setRegulatedEntityIssuer(convert(ci));
             return true;
         }
-        if ("OSS".equals(ci.getCustomsInfoSubjectCode()) && secDec.getOtherRegulatedEntity() == null) {
+        if ("OSS".equals(ci.getSubjectCode().getCode()) && secDec.getOtherRegulatedEntities() == null) {
             // the "Receiving" cannot be the "ReceivedFrom"
             // so we add the OSS to the "OtherRegulatedEntity".
             // for simplicity reasons we only support one OSS
             RegulatedEntity singleEntry = convert(ci);
-            secDec.setOtherRegulatedEntity(ONERecordCargoUtil.buildSet(singleEntry));
+            secDec.setOtherRegulatedEntities(ONERecordCargoUtil.buildSet(singleEntry));
             return true;
         }
-        if ("AC".equals(ci.getCustomsInfoContentCode()) && secDec.getReceivedFrom() == null) {
+        if ("AC".equals(ci.getContentCode().getCode()) && secDec.getReceivedFrom() == null) {
             secDec.setReceivedFrom(convert(ci));
             return true;
         }
-        if ("KC".equals(ci.getCustomsInfoContentCode()) && secDec.getReceivedFrom() == null) {
+        if ("KC".equals(ci.getContentCode().getCode()) && secDec.getReceivedFrom() == null) {
             secDec.setReceivedFrom(convert(ci));
             return true;
         }
-        if ("ED".equals(ci.getCustomsInfoContentCode())) {
+        if ("ED".equals(ci.getContentCode().getCode())) {
             // map expiry to a previous(!!) IncludedCustomsNote that matches
             try {
-                int i = Integer.parseInt(ci.getCustomsInformation());
+                int i = Integer.parseInt(ci.getNote());
                 int month = i / 100;
                 Calendar cal = Calendar.getInstance();
                 // ensure calculation to longer than the year 2100 ;-)
                 int year = (cal.get(Calendar.YEAR) / 100 * 100) + i % 100;
                 cal.clear();
                 cal.set(year, month-1, 1);
-                if (currentRegulatedEntity(secDec, previousCiSubjectCode) != null) {
-                    currentRegulatedEntity(secDec, previousCiSubjectCode)
-                        .setExpiryDate(convertToOffsetDateTime(cal));
+                RegulatedEntity current =
+                    currentRegulatedEntity(secDec, previousCiSubjectCode);
+                if (current != null) {
+                    current
+                        .setRegulatedEntityExpiryDate(convertToOffsetDateTime(cal));
                     return true;
                 }
             } catch (NumberFormatException e) {
                 // if the expiry "date" is not a integer, then we ignore it
             }
         }
-        if ("L".equals(ci.getCustomsInfoContentCode())) {
+        if ("L".equals(ci.getContentCode().getCode())) {
             // Screening Exemption Code
             if (secDec.getGroundsForExemption() == null) {
                 secDec.setGroundsForExemption(ONERecordCargoUtil.buildSet());
             }
-            secDec.getGroundsForExemption().add(ci.getCustomsInformation());
+            ScreeningExemption se = ONERecordCargoUtil.create(ScreeningExemption.class);
+            se.setId(Vocabulary.s_c_ScreeningExemption + "_" + ci.getNote());
+            secDec.getGroundsForExemption().add(se);
             return true;
         }
-        if ("SM".equals(ci.getCustomsInfoContentCode())) {
+        if ("SM".equals(ci.getContentCode().getCode())) {
             // Screening Method
-            if (secDec.getScreeningMethod() == null) {
-                secDec.setScreeningMethod(ONERecordCargoUtil.buildSet());
+            if (secDec.getScreeningMethods() == null) {
+                secDec.setScreeningMethods(ONERecordCargoUtil.buildSet());
             }
-            secDec.getScreeningMethod().add(ci.getCustomsInformation());
+            ScreeningMethod method = ONERecordCargoUtil.create(ScreeningMethod.class);
+            method.setId(Vocabulary.s_c_ScreeningMethod + "_" + ci.getNote());
+            secDec.getScreeningMethods().add(method);
             return true;
         }
         // the following checks apply independent from followin ISS or OSS or AC:
-        if ("SN".equals(ci.getCustomsInfoContentCode())) {
+        if ("SN".equals(ci.getContentCode().getCode())) {
         // operator issuing the security status
             secDec.setIssuedBy(ONERecordCargoUtil.create(Person.class));
-            secDec.getIssuedBy().setLastName(ci.getCustomsInformation());
+            secDec.getIssuedBy().setLastName(ci.getNote());
             return true;
         }
         // SD is an alphanumeric entry identifying the exact date and time when the security status was issued by the Regulated Agent
         // ddmmmyytttt
-        if ("SD".equals(ci.getCustomsInfoContentCode())) {
+        if ("SD".equals(ci.getContentCode().getCode())) {
             DateFormat df = new SimpleDateFormat("ddMMMyyHHmm", Locale.US);
             try {
-                Date date = df.parse(ci.getCustomsInformation());
+                Date date = df.parse(ci.getNote());
                 secDec.setIssuedOn(convertToOffsetDateTime(date));
                 return true;
             } catch (ParseException e) {
                 // if timestamp is not parsable, then we ignore it
             }
         }
-        if ("SS".equals(ci.getCustomsInfoContentCode())) {
-            secDec.setSecurityStatus(ci.getCustomsInformation());
+        if ("SS".equals(ci.getContentCode().getCode())) {
+            SecurityStatus securityStatus = ONERecordCargoUtil.create(SecurityStatus.class);
+            securityStatus.setId(Vocabulary.s_c_SecurityStatus + "_" + ci.getNote());
+            secDec.setSecurityStatus(securityStatus);
             return true;
         }
-        if ("ST".equals(ci.getCustomsInfoContentCode())) {
+        if ("ST".equals(ci.getContentCode().getCode())) {
             if (secDec.getAdditionalSecurityInformation() == null) {
-                secDec.setAdditionalSecurityInformation(ci.getCustomsInformation());
+                secDec.setAdditionalSecurityInformation(ci.getNote());
             } else {
                 secDec.setAdditionalSecurityInformation(
-                    secDec.getAdditionalSecurityInformation() + "\n" + ci.getCustomsInformation()
+                    secDec.getAdditionalSecurityInformation() + "\n" + ci.getNote()
                 );
             }
             return true;
@@ -1259,7 +1267,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         }
         if ("OSS".equals(previousCiSubjectCode)) {
             RegulatedEntity[] arr = new RegulatedEntity[1];
-            secDec.getOtherRegulatedEntity().toArray(arr);
+            secDec.getOtherRegulatedEntities().toArray(arr);
             return arr[0];
         }
         if ("KC".equals(previousCiSubjectCode)) {
@@ -1268,19 +1276,21 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         return null;
     }
 
-    static RegulatedEntity convert(CustomsInfo ci) {
+    static RegulatedEntity convert(CustomsInformation ci) {
         // Example: IE/ISS/RA/00084-01
         // Example: ///AC/12345ABCDE
         // CustomsInformation / CustomsInfoSubjectCode / CustomsInfoContentCode / CustomsInfoNote
         RegulatedEntity regulated = ONERecordCargoUtil.create(RegulatedEntity.class);
-        regulated.setRegulatedEntityCategory(ci.getCustomsInfoContentCode());
+        RegulatedEntityCategoryCode reCategoryCode = ONERecordCargoUtil.create(
+            RegulatedEntityCategoryCode.class);
+        reCategoryCode.setId(Vocabulary.s_c_RegulatedEntityCategoryCode + "_" + ci.getContentCode().getCode());
+        regulated.setRegulatedEntityCategory(reCategoryCode);
         Company company = ONERecordCargoUtil.create(Company.class);
-        company.setBranch(ONERecordCargoUtil.create(CompanyBranch.class));
         OtherIdentifier oi = ONERecordCargoUtil.create(OtherIdentifier.class);
-        oi.setOtherIdentifierType(regulated.getRegulatedEntityCategory());
-        oi.setIdentifier(ci.getCustomsInformation());
-        company.getBranch().setOtherIdentifiers(ONERecordCargoUtil.buildSet(oi));
-        regulated.setRegulatedEntityIdentifier(company);
+        oi.setOtherIdentifierType(ci.getContentCode().getCode());
+        oi.setTextualValue(ci.getNote());
+        company.setOtherIdentifiers(ONERecordCargoUtil.buildSet(oi));
+        regulated.setOwningOrganization(company);
         return regulated;
     }
 
