@@ -368,14 +368,15 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             String countryCode = xmlCustNote.getCountryID() == null
                 ? null
                 : value(xmlCustNote.getCountryID(), null).getCountryCode();
-            CustomsInfo custInfo = ONERecordCargoUtil.create(CustomsInfo.class);
-
-            custInfo.setCustomsInfoContentCode(contentCode);
-            custInfo.setCustomsInfoCountryCode(countryCode);
+            CustomsInformation custInfo = ONERecordCargoUtil.create(CustomsInformation.class);
+            CodeListElement contentCodeCLE = createCodeListElementGeneral(contentCode);
+            custInfo.setContentCode(contentCodeCLE);
+            custInfo.setCountryCode(countryCode);
             // data field "customsInfoNote":
             // Free text for customs remarks, not used in OCI Composition Rules Table
-            custInfo.setCustomsInfoSubjectCode(subjectCode);
-            custInfo.setCustomsInformation(contentText);
+            CodeListElement subjectCodeCLE = createCodeListElementGeneral(subjectCode);
+            custInfo.setSubjectCode(subjectCodeCLE);
+            custInfo.setNote(contentText);
 
             if ("CT".equals(contentCode) ||
                 "CP".equals(contentCode))
