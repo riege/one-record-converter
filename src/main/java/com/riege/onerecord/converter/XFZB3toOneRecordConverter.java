@@ -316,11 +316,13 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment02:
         // departure and destination
-        mainTransportSegment.setDepartureLocation(value(xmlHouse.getOriginLocation()));
-        mainTransportSegment.setArrivalLocation(value(xmlHouse.getFinalDestinationLocation()));
+        waybill.setDepartureLocation(value(xmlHouse.getOriginLocation()));
+        waybill.setArrivalLocation(value(xmlHouse.getFinalDestinationLocation()));
 
-        // totalPieceCount
-        mainShipment.setTotalPieceCount(integerValue(xmlHouse.getTotalPieceQuantity()));
+        // totalPieceCount -> not available anymore on shipment
+//        mainShipment.setTotalPieceCount(integerValue(xmlHouse.getTotalPieceQuantity()));
+        int pieceQuantityXML = integerValue(xmlHouse.getTotalPieceQuantity());
+        checkPieceQuantityAgainstItemCount(pieceQuantityXML, mainPiece.getContainedItems());
 
         // totalGrossWeight
         mainShipment.setTotalGrossWeight(value(xmlHouse.getIncludedTareGrossWeightMeasure()));
