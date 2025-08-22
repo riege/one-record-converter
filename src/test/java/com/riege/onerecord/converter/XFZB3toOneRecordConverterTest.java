@@ -1,17 +1,24 @@
 package com.riege.onerecord.converter;
 
 import java.io.InputStream;
+import java.util.Collections;
 
 import javax.xml.bind.JAXBException;
 
+import org.iata.onerecord.cargo.Vocabulary;
 import org.iata.onerecord.cargo.codelists.WaybillTypeCode;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.jsonpath.JsonPath;
 
 import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
 import com.riege.onerecord.jsonutils.JacksonObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class XFZB3toOneRecordConverterTest {
 
@@ -19,14 +26,14 @@ public class XFZB3toOneRecordConverterTest {
     public void testSEL22222222() throws JAXBException, JsonProcessingException {
         Result result =
             fileProcessingTest("SEL22222222_XFZB.xml");
-        Assertions.assertNotNull(result.converter.getValidationWarnings());
-        Assertions.assertFalse(result.converter.getValidationWarnings().isEmpty());
+        assertNotNull(result.converter.getValidationWarnings());
+        assertFalse(result.converter.getValidationWarnings().isEmpty());
         for (ValidationMessage msg : result.converter.getValidationWarnings()) {
             System.out.println(result.awb + " WARNING: " + msg.getMessage());
         }
 
-        Assertions.assertNotNull(result.converter.getValidationErrors());
-        Assertions.assertTrue(result.converter.getValidationErrors().isEmpty());
+        assertNotNull(result.converter.getValidationErrors());
+        assertTrue(result.converter.getValidationErrors().isEmpty());
         for (ValidationMessage msg : result.converter.getValidationErrors()) {
             System.out.println(result.awb + " ERROR: " + msg.getMessage());
         }
@@ -36,55 +43,80 @@ public class XFZB3toOneRecordConverterTest {
         }
 
         System.out.println(result.awb + " JSON=\n" + result.json);
-        Assertions.assertEquals(
-            WaybillTypeCode.HOUSE.code(), result.converter.getOneRecordResult().getWaybillType());
+        assertEquals(Vocabulary.ONTOLOGY_IRI_cargo + "#" + WaybillTypeCode.HOUSE.code(),
+            JsonPath.read(result.json,
+                "$.waybillType.id"));
 
         // check that all payload is also in the JSON:
-        Assertions.assertTrue(result.json.contains("waybillType\" : \"House\""));
-        Assertions.assertTrue(result.json.contains("waybillNumber\" : \"SEL22222222\""));
-        Assertions.assertTrue(result.json.contains("2022-04-29T00:00:00"));
-        Assertions.assertTrue(result.json.contains("ARMIN AIRLINE"));
-        Assertions.assertTrue(result.json.contains("SIEGFRIED SIGNATURE"));
-        Assertions.assertTrue(result.json.contains("code\" : \"ICN\""));
-        Assertions.assertTrue(result.json.contains("code\" : \"FDH\""));
-        Assertions.assertFalse(result.json.contains("code\" : \"FRA\""));
+        assertEquals("SEL22222222", JsonPath.read(result.json, "$.waybillNumber"));
+        assertEquals("2022-04-29T00:00:00", JsonPath.read(result.json, "$.carrierDeclarationDate"));
+        assertEquals("ARMIN AIRLINE", JsonPath.read(result.json, "$.carrierDeclarationSignature"));
+        assertEquals("SIEGFRIED SIGNATURE", JsonPath.read(result.json, "$.consignorDeclarationSignature"));
+        assertEquals("ICN", JsonPath.read(result.json, "$.departureLocation.locationCodes[0].code"));
+        assertEquals("FDH", JsonPath.read(result.json, "$.arrivalLocation.locationCodes[0].code"));
         // FEHLT Assertions.assertTrue(result.json.contains("8112345678"));
-        Assertions.assertTrue(result.json.contains("nvdForCarriage\" : true"));
-        Assertions.assertTrue(result.json.contains("nvdForCustoms\" : true"));
-        Assertions.assertTrue(result.json.contains("nvdIndicator\" : true"));
+        assertEquals(true, JsonPath.read(result.json, "$.shipment.pieces[0].nvdForCarriage"));
+        assertEquals(true, JsonPath.read(result.json, "$.shipment.pieces[0].nvdForCustoms"));
         // Unclear where to put <IncludedHouseConsignment><TotalPrepaidChargeAmount>
         // Assertions.assertTrue(result.json.contains("420"));
-        Assertions.assertTrue(result.json.contains("134.0"));
+        assertEquals(134.0,
+            JsonPath.read(result.json, "$.shipment.pieces[0].grossWeight.numericalValue"));
+        assertEquals("5432109876",
+            JsonPath.read(result.json, "$.shipment.pieces[0].customsInformation[0].note"));
+        assertEquals("SPARE PARTS",
+            JsonPath.read(result.json, "$.shipment.pieces[0].goodsDescription"));
 
-        Assertions.assertTrue(result.json.contains("customsInformation\" : \"5432109876\""));
-        Assertions.assertTrue(result.json.contains("goodsDescription\" : \"SPARE PARTS\""));
+        // Involved parties: Shipper
+        assertEquals(Vocabulary.s_c_ParticipantIdentifier + "_SHP",
+            JsonPath.read(result.json, "$.shipment.involvedParties[0].partyRole.id"));
+        assertEquals("SPARE PART LTD.",
+            JsonPath.read(result.json, "$.shipment.involvedParties[0].partyDetails.name"));
+        assertEquals(Collections.singletonList("42. GONGDAN SEONGSAN"),
+            JsonPath.read(result.json,
+                "$.shipment.involvedParties[0].partyDetails.basedAtLocation.address.streetAddressLines"));
+        assertEquals("CHANGWON-SI. KYUN", JsonPath.read(result.json,
+            "$.shipment.involvedParties[0].partyDetails.basedAtLocation.address.cityName"));
+        assertEquals("12345", JsonPath.read(result.json,
+            "$.shipment.involvedParties[0].partyDetails.basedAtLocation.address.postalCode.code"));
+        assertEquals("KR", JsonPath.read(result.json,
+            "$.shipment.involvedParties[0].partyDetails.basedAtLocation.address.country.countryCode"));
+        assertEquals("0553456789012", JsonPath.read(result.json,
+            "$.shipment.involvedParties[0].partyDetails.contactPersons[0].contactDetails[0].textualValue"));
+        assertEquals("KIM QUAN KWUN", JsonPath.read(result.json,
+            "$.shipment.involvedParties[0].partyDetails.contactPersons[0].lastName"));
 
-        Assertions.assertTrue(result.json.contains("SPARE PART LTD"));
-        Assertions.assertTrue(result.json.contains("42. GONGDAN SEONGSAN"));
-        Assertions.assertTrue(result.json.contains("CHANGWON-SI. KYUN"));
-        Assertions.assertTrue(result.json.contains("12345"));
-        Assertions.assertTrue(result.json.contains("\"KR\""));
-        Assertions.assertTrue(result.json.contains("0553456789012"));
-        Assertions.assertFalse(result.json.contains("055281234567890"));
-        Assertions.assertTrue(result.json.contains("KIM QUAN KWUN"));
-
-        Assertions.assertTrue(result.json.contains("REPAIR DIENST GMBH"));
-        Assertions.assertTrue(result.json.contains("SPEZIAL-STR. 13"));
-        Assertions.assertTrue(result.json.contains("87654"));
-        Assertions.assertTrue(result.json.contains("FRIEDRICHSHAFEN"));
-        Assertions.assertTrue(result.json.contains("DE"));
+        // Involved parties: Consignee
+        assertEquals(Vocabulary.s_c_ParticipantIdentifier + "_CNE",
+            JsonPath.read(result.json, "$.shipment.involvedParties[1].partyRole.id"));
+        assertEquals("REPAIR DIENST GMBH",
+            JsonPath.read(result.json, "$.shipment.involvedParties[1].partyDetails.name"));
+        assertEquals(Collections.singletonList("SPEZIAL-STR. 13"),
+            JsonPath.read(result.json,
+                "$.shipment.involvedParties[1].partyDetails.basedAtLocation.address.streetAddressLines"));
+        assertEquals("87654", JsonPath.read(result.json,
+            "$.shipment.involvedParties[1].partyDetails.basedAtLocation.address.postalCode.code"));
+        assertEquals("FRIEDRICHSHAFEN", JsonPath.read(result.json,
+            "$.shipment.involvedParties[1].partyDetails.basedAtLocation.address.cityName"));
+        assertEquals("DE", JsonPath.read(result.json,
+            "$.shipment.involvedParties[1].partyDetails.basedAtLocation.address.country.countryCode"));
 
         // OCIs
-        Assertions.assertTrue(result.json.contains("customsInfoContentCode\" : \"T\""));
-        Assertions.assertTrue(result.json.contains("customsInfoCountryCode\" : \"DE\""));
-        Assertions.assertTrue(result.json.contains("customsInfoSubjectCode\" : \"CNE\""));
-        Assertions.assertTrue(result.json.contains("customsInformation\" : \"DE3056777000\""));
+        assertEquals("T", JsonPath.read(result.json,
+            "$.shipment.pieces[0].customsInformation[1].contentCode.code"));
+        assertEquals("DE", JsonPath.read(result.json,
+            "$.shipment.pieces[0].customsInformation[1].countryCode"));
+        assertEquals("CNE", JsonPath.read(result.json,
+            "$.shipment.pieces[0].customsInformation[1].subjectCode.code"));
+        assertEquals("DE3056777000", JsonPath.read(result.json,
+            "$.shipment.pieces[0].customsInformation[1].note"));
 
-        Assertions.assertTrue(result.json.contains("SLAC\" : 200"));
-        Assertions.assertTrue(result.json.contains("PieceCount\" : 10"));
+        assertEquals(200,
+            (Integer) JsonPath.read(result.json, "$.waybillLineItems[0].slacForRate"));
+//        assertTrue(result.json.contains("PieceCount\" : 10"));
 
         // Some more
-        Assertions.assertTrue(result.json.contains("hsCode\" : \"1133557799\""));
+        assertEquals("1133557799", JsonPath.read(result.json,
+            "$.shipment.pieces[0].containedItems[0].ofProduct.hsCode.code"));
     }
 
     private Result fileProcessingTest(String filename) throws JAXBException, JsonProcessingException {
@@ -98,7 +130,7 @@ public class XFZB3toOneRecordConverterTest {
             JacksonObjectMapper.buildMapperWithoutTimezone()
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(object);
-        Assertions.assertNotNull(result.json);
+        assertNotNull(result.json);
         return result;
     }
 
