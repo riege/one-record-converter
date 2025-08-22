@@ -911,13 +911,16 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
             AuthenticationLocationType location = sigCarrier.getIssueAuthenticationLocation();
             if (location != null) {
                 waybill.setCarrierDeclarationPlace(ONERecordCargoUtil.create(Location.class));
-                waybill.getCarrierDeclarationPlace().setCode(value(location.getName()));
+                Set<CodeListElement> locationCodes = ONERecordCargoUtil.buildSet();
+                CodeListElement locationCode = createCodeListElementGeneral(value(location.getName()));
+                locationCodes.add(locationCode);
+                waybill.getCarrierDeclarationPlace().setLocationCodes(locationCodes);
             }
         }
         ConsignorAuthenticationType sigConsignor = xmlBH.getSignatoryConsignorAuthentication();
         if (sigConsignor != null) {
             String singleEntry = value(sigConsignor.getSignatory());
-            waybill.setConsignorDeclarationSignature(ONERecordCargoUtil.buildSet(singleEntry));
+            waybill.setConsignorDeclarationSignature(singleEntry);
         }
     }
 
