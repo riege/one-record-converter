@@ -331,7 +331,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
         VolumetricWeight volumetricWeight = ONERecordCargoUtil.create(VolumetricWeight.class);
         volumetricWeight.setChargeableWeight(mainShipment.getTotalGrossWeight());
-        mainShipment.setVolumetricWeight(ONERecordCargoUtil.buildSet(volumetricWeight));
+        mainShipment.setTotalVolumetricWeight(volumetricWeight);
 
         // totalVolume
         if (xmlHouse.getGrossVolumeMeasure() != null) {
@@ -390,7 +390,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                 haveCTCP = true;
                 continue;
             }
-            if (XFWB3toOneRecordConverter.updateSecurityDeclaration(custInfo, secDec, previousCiSubjectCode)) {
+            if (updateSecurityDeclaration(custInfo, secDec, previousCiSubjectCode)) {
                 haveSecDec = true;
                 // /IE/ISS/RA/00084-01
                 addHint(VG_INFORMATION,
@@ -405,10 +405,10 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                         + "' transformed into SecurityStatus."
                 );
             } else {
-                if (mainPiece.getCustomsInfo() == null) {
-                    mainPiece.setCustomsInfo(ONERecordCargoUtil.buildSet());
+                if (mainPiece.getCustomsInformation() == null) {
+                    mainPiece.setCustomsInformation(ONERecordCargoUtil.buildSet());
                 }
-                mainPiece.getCustomsInfo().add(custInfo);
+                mainPiece.getCustomsInformation().add(custInfo);
             }
             if (subjectCode != null) {
                 previousCiSubjectCode = subjectCode;
