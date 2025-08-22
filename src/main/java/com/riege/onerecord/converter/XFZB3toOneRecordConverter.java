@@ -86,7 +86,6 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
 
     private BookingOption mainBooking;
     private Carrier mainAirline;
-    private TransportMovement mainTransportSegment;
     private Shipment mainShipment;
     private Piece mainPiece;
 
@@ -113,19 +112,15 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         // mainBooking = OneRecordTypeConstants.createBooking();
         // waybill.setBookingRef(mainBooking);
         mainBooking = ONERecordCargoUtil.create(BookingOption.class);
-        waybill.setBooking(ONERecordCargoUtil.create(Booking.class));
-        waybill.getBooking().setBookingRequest(ONERecordCargoUtil.create(BookingRequest.class));
-        waybill.getBooking().getBookingRequest().setBookingOption(mainBooking);
-
-        // NOTE: BookingOption has no setter for TransportMovement yet!
-        mainTransportSegment = ONERecordCargoUtil.create(TransportMovement.class);
+        waybill.setReferredBookingOption(ONERecordCargoUtil.create(Booking.class));
+        waybill.getReferredBookingOption().setBookingRequest(ONERecordCargoUtil.create(BookingRequest.class));
+        waybill.getReferredBookingOption().getBookingRequest().setForBookingOption(mainBooking);
 
         mainShipment = ONERecordCargoUtil.create(Shipment.class);
-        mainBooking.setShipmentDetails(mainShipment);
+        waybill.setShipment(mainShipment);
 
         mainPiece = ONERecordCargoUtil.create(Piece.class);
-        mainPiece.setTransportMovements(ONERecordCargoUtil.buildSet(mainTransportSegment));
-        mainShipment.setContainedPieces(ONERecordCargoUtil.buildSet(mainPiece));
+        mainShipment.setPieces(ONERecordCargoUtil.buildSet(mainPiece));
 
         // Add the main carrier, as per AWB prefix
         mainAirline = ONERecordCargoUtil.create(Carrier.class);
