@@ -1035,18 +1035,21 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         if (isNullOrEmpty(xmlMC.getHandlingSPHInstructions())) {
             return;
         }
+        if (mainPiece.getSpecialHandlingCodes() == null) {
+            mainPiece.setSpecialHandlingCodes(ONERecordCargoUtil.buildSet());
+        }
         for (SPHInstructionsType xmlInstr : xmlMC.getHandlingSPHInstructions()) {
             if (xmlInstr.getDescriptionCode() != null) {
                 // 2022-May Ontology:
                 // use mainPiece.getHandlingInstructions(...) instead of ServiceRequest
                 // See https://github.com/IATA-Cargo/ONE-Record/issues/134
-                if (mainPiece.getHandlingInstructions() == null) {
-                    mainPiece.setHandlingInstructions(ONERecordCargoUtil.buildSet());
+                String sphIRI = determineSpecialHandlingCodeIRI(
+                    value(xmlInstr.getDescriptionCode()));
+                if (sphIRI != null) {
+                    SpecialHandlingCode sph = ONERecordCargoUtil.create(SpecialHandlingCode.class);
+                    sph.setId(sphIRI);
+                    mainPiece.getSpecialHandlingCodes().add(sph);
                 }
-                HandlingInstructions hi = ONERecordCargoUtil.create(HandlingInstructions.class);
-                hi.setServiceType(HandlingInstructionsServiceTypeCode.SPH.code());
-                hi.setServiceTypeCode(value(xmlInstr.getDescriptionCode()));
-                mainPiece.getHandlingInstructions().add(hi);
             }
         }
     }
