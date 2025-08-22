@@ -359,18 +359,29 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
      */
 
     private void convertCIMPSegment03to04Flights() {
-        Set<TransportMovement> flights = ONERecordCargoUtil.buildSet();
+        // Flights are now mapped as ActivitySequence on mainBookingOption
+        Set<ActivitySequence> flights = ONERecordCargoUtil.buildSet();
         for (LogisticsTransportMovementType ltm : xmlMC.getSpecifiedLogisticsTransportMovement()) {
+            ActivitySequence seq = ONERecordCargoUtil.create(ActivitySequence.class);
             TransportMovement tm = ONERecordCargoUtil.create(TransportMovement.class);
+            seq.setSequenceNumber(String.valueOf(ltm.getSequenceNumeric()));
             // ModeCode is the same in 1R+XFWB, so we apply 1:1
             // In XFWB, ModeCode="4" means "Air transport"
             // In XFWB, there is also a ltm.getMode() with value "Air transport"
             if (ltm.getModeCode() != null) {
-                tm.setModeCode(ltm.getModeCode().getValue());
+                ModeCode modeCode = ONERecordCargoUtil.create(ModeCode.class);
+                String modeCodeIRI = determineModeCodeIRI(ltm.getModeCode().getValue());
+                modeCode.setId(modeCodeIRI);
+                tm.setModeCode(modeCode);
             }
-            tm.setModeQualifier(value(ltm.getStageCode()));
+            ModeQualifier modeQualifier = ONERecordCargoUtil.create(ModeQualifier.class);
+            String modeQualifierIRI = determineModeQualifierIRI(value(ltm.getStageCode()));
+            modeQualifier.setId(modeQualifierIRI);
+            tm.setModeQualifier(modeQualifier);
             if (ltm.getUsedLogisticsTransportMeans() != null) {
-                tm.setCompanyIdentifier(value(ltm.getUsedLogisticsTransportMeans().getName()));
+            // this is supposed to be set on TransportMovement#operatingParties -> Party.partyDetails -> Carrier#airlineCode
+            // this seems to be missing in 3.0.0 but got added in 3.1.1
+//                tm.setCompanyIdentifier(value(ltm.getUsedLogisticsTransportMeans().getName()));
             }
             if (ltm.getDepartureEvent() != null) {
                 tm.setDepartureLocation(
@@ -378,13 +389,13 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                 if (ltm.getDepartureEvent().getScheduledOccurrenceDateTime() == null) {
                     tm.setTransportIdentifier(value(ltm.getID()));
                 } else {
-                    // The getDepartureEvent().getScheduledOccurrenceDateTime()
-                    // should map to 1R MovementTimes but in Ontology v1.1
-                    // MovementTimes is not linked in TransportMovement :-/
-                    MovementTimes mt = ONERecordCargoUtil.create(MovementTimes.class);
+                    MovementTime mt = ONERecordCargoUtil.create(MovementTime.class);
                     mt.setMovementTimestamp(
                         convertToOffsetDateTime(ltm.getDepartureEvent().getScheduledOccurrenceDateTime()));
-                    mt.setMovementMilestone(MovementIndicatorCode.SCHEDULED_DEPARTURE.code());
+                    MovementIndicator movementIndicator =
+                        ONERecordCargoUtil.create(MovementIndicator.class);
+                    movementIndicator.setCode(MovementIndicatorCode.SCHEDULED_DEPARTURE.code());
+                    mt.setMovementMilestone(movementIndicator);
                     // Ontology v1.1:
                     //int day = ltm.getDepartureEvent().getScheduledOccurrenceDateTime().toGregorianCalendar().get(Calendar.DAY_OF_MONTH);
                     //tm.setTransportIdentifier(value(ltm.getID()) + String.format("/%02d", day));
@@ -393,15 +404,15 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     tm.setMovementTimes(ONERecordCargoUtil.buildSet(mt));
                 }
             }
-
             if (ltm.getArrivalEvent() != null) {
                 tm.setArrivalLocation(
                     value(ltm.getArrivalEvent().getOccurrenceArrivalLocation()));
             }
-            flights.add(tm);
+            seq.setActivity(tm);
+            flights.add(seq);
         }
         if (!flights.isEmpty()) {
-            mainPiece.setTransportMovements(flights);
+            mainBookingOption.setActivitySequences(flights);
         }
     }
 
