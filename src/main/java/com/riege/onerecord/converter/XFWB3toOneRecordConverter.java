@@ -214,7 +214,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
          */
         /*
          * CIMPSegment27 is converted at the beginning because it might generate a hint
-         * which makes sence to put as the first Hint in the validation result list.
+         * which makes sense to put as the first Hint in the validation result list.
          */
         convertCIMPSegment27();
         convertCIMPSegment02();
@@ -247,12 +247,16 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     private void convertCIMPSegment02() {
         // Determine type of AWB ("Master" or "Direct")
         String typeCode = value(xmlMH.getTypeCode());
+        org.iata.onerecord.cargo.model.WaybillType waybillType =
+            ONERecordCargoUtil.create(org.iata.onerecord.cargo.model.WaybillType.class);
         if (typeCode == null) {
             addError(VG_XMLDATAERROR, "Missing TypeCode in MessageHeaderDocumentType");
         } else if ("740".equals(typeCode.trim())) {
-            waybill.setWaybillType(WaybillTypeCode.DIRECT.code());
+            waybillType.setId(Vocabulary.ONTOLOGY_IRI_cargo + "#" + WaybillTypeCode.DIRECT.code());
+            waybill.setWaybillType(waybillType);
         } else if ("741".equals(typeCode.trim())) {
-            waybill.setWaybillType(WaybillTypeCode.MASTER.code());
+            waybillType.setId(Vocabulary.ONTOLOGY_IRI_cargo + "#" + WaybillTypeCode.MASTER.code());
+            waybill.setWaybillType(waybillType);
         } else {
             addError(VG_XMLDATAERROR, "Unsupported XFWB type code '" + typeCode + "' MessageHeaderDocumentType/TypeCode");
         }
