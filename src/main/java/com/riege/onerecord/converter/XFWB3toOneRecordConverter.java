@@ -1382,10 +1382,13 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         Address address = prepareCompanyAddress(company);
         String street = value(xmlAddress.getStreetName());
         if (street != null) {
-            address.setStreet(ONERecordCargoUtil.buildSet(street.split("\n")));
+            address.setStreetAddressLines(ONERecordCargoUtil.buildSet(street.split("\n")));
         }
         address.setCityName(value(xmlAddress.getCityName()));
-        address.setPostalCode(value(xmlAddress.getPostcodeCode()));
+        // 3.1.1 has Address.textualPostCode which would be nicer here
+        CodeListElement cle = ONERecordCargoUtil.create(CodeListElement.class);
+        cle.setCode(value(xmlAddress.getPostcodeCode()));
+        address.setPostalCode(cle);
         address.setCountry(value(xmlAddress.getCountryID(), xmlAddress.getCountryName()));
         return company;
     }
@@ -1398,31 +1401,31 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         Address address = prepareCompanyAddress(company);
         String street = value(xmlAddress.getStreetName());
         if (street != null) {
-            address.setStreet(ONERecordCargoUtil.buildSet(street.split("\n")));
+            address.setStreetAddressLines(ONERecordCargoUtil.buildSet(street.split("\n")));
         }
         address.setCityName(value(xmlAddress.getCityName()));
-        address.setPostalCode(value(xmlAddress.getPostcodeCode()));
+        CodeListElement postalCodeCLE = createCodeListElementGeneral(value(xmlAddress.getPostcodeCode()));
+        address.setPostalCode(postalCodeCLE);
         address.setCountry(value(xmlAddress.getCountryID(), xmlAddress.getCountryName()));
         return company;
     }
 
     static Address prepareCompanyAddress(Company company) {
-        if (company.getBranch() == null) {
-            company.setBranch(ONERecordCargoUtil.create(CompanyBranch.class));
+        if (company.getBasedAtLocation() == null) {
+            company.setBasedAtLocation(ONERecordCargoUtil.create(Location.class));
         }
-        if (company.getBranch().getLocation() == null) {
-            company.getBranch().setLocation(ONERecordCargoUtil.create(Location.class));
+        if (company.getBasedAtLocation().getAddress() == null) {
+            company.getBasedAtLocation().setAddress(ONERecordCargoUtil.create(Address.class));
         }
-        if (company.getBranch().getLocation().getAddress() == null) {
-            company.getBranch().getLocation().setAddress(ONERecordCargoUtil.create(Address.class));
-        }
-        return company.getBranch().getLocation().getAddress();
+        return company.getBasedAtLocation().getAddress();
     }
 
-    private Contact createContact(ContactTypeCode type, String value) {
-        Contact contact = ONERecordCargoUtil.create(Contact.class);
-        contact.setContactType(type.code());
-        contact.setContactValue(value);
+    private ContactDetail createContact(ContactTypeCode type, String value) {
+        ContactDetail contact = ONERecordCargoUtil.create(ContactDetail.class);
+        ContactDetailType contactDetailType = ONERecordCargoUtil.create(ContactDetailType.class);
+        contactDetailType.setCode(type.code());
+        contact.setContactDetailType(contactDetailType);
+        contact.setTextualValue(value);
         return contact;
     }
 
@@ -1436,12 +1439,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         String name = value(xmlName);
         if (name != null && name.contains("\n")) {
             String[] array = name.split("\n");
-            company.setCompanyName(array[0]);
-            // company.getBranch().setBranchName(array[1]);
-            company.getBranch().setBranchName(name);
+            company.setName(array[0]);
         } else {
-            company.setCompanyName(name);
-            company.getBranch().setBranchName(name);
+            company.setName(name);
         }
 
         final Person person = ONERecordCargoUtil.create(Person.class);
@@ -1487,17 +1487,17 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
             }
         }
         if (haveContact) {
-            person.setContact(ONERecordCargoUtil.buildSet());
+            person.setContactDetails(ONERecordCargoUtil.buildSet());
             if (phone != null) {
-                person.getContact().add(createContact(ContactTypeCode.PHONE, phone));
+                person.getContactDetails().add(createContact(ContactTypeCode.PHONE, phone));
             }
             if (fax != null) {
-                person.getContact().add(createContact(ContactTypeCode.FAX, fax));
+                person.getContactDetails().add(createContact(ContactTypeCode.FAX, fax));
             }
             if (mail != null) {
-                person.getContact().add(createContact(ContactTypeCode.EMAIL, mail));
+                person.getContactDetails().add(createContact(ContactTypeCode.EMAIL, mail));
             }
-            company.getBranch().setContactPersons(ONERecordCargoUtil.buildSet(person));
+            company.setContactPersons(ONERecordCargoUtil.buildSet(person));
         }
         return company;
     }
