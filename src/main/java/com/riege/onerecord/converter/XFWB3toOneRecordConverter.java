@@ -201,7 +201,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
 
         if (xmlMC.getApplicableOriginCurrencyExchange() != null && xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode() != null) {
             awbCurrency = value(xmlMC.getApplicableOriginCurrencyExchange().getSourceCurrencyCode());
-            waybill.setOriginCurrency(awbCurrency);
+            CurrencyCode awbCurrencyCLE = ONERecordCargoUtil.create(CurrencyCode.class);
+            awbCurrencyCLE.setId(Vocabulary.s_c_CurrencyCode + "_" + awbCurrency);
+            waybill.setOriginCurrency(awbCurrencyCLE);
         }
 
         /*
