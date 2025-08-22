@@ -134,7 +134,10 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         xmlBH = xfzb.getBusinessHeaderDocument();
         xmlHouse = xmlMC.getIncludedHouseConsignment();
 
-        waybill.setWaybillType(WaybillTypeCode.HOUSE.code());
+        org.iata.onerecord.cargo.model.WaybillType waybillType =
+            ONERecordCargoUtil.create(org.iata.onerecord.cargo.model.WaybillType.class);
+        waybillType.setId(Vocabulary.ONTOLOGY_IRI_cargo + "#" + WaybillTypeCode.HOUSE.code());
+        waybill.setWaybillType(waybillType);
         /*
          * Conversion is split by topic of the individual CIMP segments,
          * just to allow easier navigation though source code.
