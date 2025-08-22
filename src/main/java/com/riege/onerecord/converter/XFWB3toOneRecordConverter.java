@@ -1059,23 +1059,23 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     // *************************************************************************
     private void convertCIMPSegment27() {
         // prefer BusinessHeaderDocument.SenderAssignedID over MasterConsignment.ID
-        // for setOptionalShippingRefNo if available
+        // for setShippingRefNo if available
         String senderAssignedID = value(xmlBH.getSenderAssignedID());
         String shippingRef = value(xmlMC.getID());
         if (senderAssignedID != null && shippingRef != null) {
             if (senderAssignedID.length() >= shippingRef.length()) {
-                waybill.setOptionalShippingRefNo(senderAssignedID);
+                waybill.setShippingRefNo(senderAssignedID);
                 addHint(VG_INFORMATION, "BusinessHeaderDocument.SenderAssignedID (=CIMP 20.5.1) got preferred over MasterConsignment.ID as 'longer ID' for 1R.OptionalShippingRefNo");
             } else {
-                waybill.setOptionalShippingRefNo(shippingRef);
+                waybill.setShippingRefNo(shippingRef);
                 addHint(VG_INFORMATION, "MasterConsignment.ID got preferred over BusinessHeaderDocument.SenderAssignedID (=CIMP 20.5.1) as 'longer ID' for 1R.OptionalShippingRefNo");
             }
         } else if (senderAssignedID != null) {
-            waybill.setOptionalShippingRefNo(senderAssignedID);
+            waybill.setShippingRefNo(senderAssignedID);
         } else {
-            waybill.setOptionalShippingRefNo(shippingRef);
+            waybill.setShippingRefNo(shippingRef);
         }
-        waybill.setOptionalShippingInfo(value(xmlMC.getAdditionalID()));
+        waybill.setShippingInfo(value(xmlMC.getAdditionalID()));
     }
 
     // *************************************************************************
