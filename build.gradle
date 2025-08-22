@@ -44,7 +44,7 @@ ext {
     implDescription      = implVendor + ' ' + product + ' Java Library'
     specVersion          = '1.1'
     implVersion          = version
-    javaTarget           = JavaVersion.VERSION_1_8
+    javaTarget           = JavaVersion.VERSION_11
 }
 
 group 'com.riege'
