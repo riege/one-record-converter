@@ -1106,14 +1106,15 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
             String countryCode = xmlCustNote.getCountryID() == null
                     ? null
                     : value(xmlCustNote.getCountryID(), null).getCountryCode();
-            CustomsInfo custInfo = ONERecordCargoUtil.create(CustomsInfo.class);
-
-            custInfo.setCustomsInfoContentCode(contentCode);
-            custInfo.setCustomsInfoCountryCode(countryCode);
-            // data field "customsInfoNote":
+            CustomsInformation custInfo = ONERecordCargoUtil.create(CustomsInformation.class);
+            CodeListElement contentCodeCLE = createCodeListElementGeneral(contentCode);
+            custInfo.setContentCode(contentCodeCLE);
+            custInfo.setCountryCode(countryCode);
+            // data field "Note":
             // Free text for customs remarks, not used in OCI Composition Rules Table
-            custInfo.setCustomsInfoSubjectCode(subjectCode);
-            custInfo.setCustomsInformation(contentText);
+            CodeListElement subjectCodeCLE = createCodeListElementGeneral(subjectCode);
+            custInfo.setSubjectCode(subjectCodeCLE);
+            custInfo.setNote(contentText);
 
             if ("CT".equals(contentCode) ||
                 "CP".equals(contentCode))
@@ -1142,10 +1143,10 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     + "' transformed into SecurityStatus."
                 );
             } else {
-                if (mainPiece.getCustomsInfo() == null) {
-                    mainPiece.setCustomsInfo(ONERecordCargoUtil.buildSet());
+                if (mainPiece.getCustomsInformation() == null) {
+                    mainPiece.setCustomsInformation(ONERecordCargoUtil.buildSet());
                 }
-                mainPiece.getCustomsInfo().add(custInfo);
+                mainPiece.getCustomsInformation().add(custInfo);
             }
             if (subjectCode != null) {
                 previousCiSubjectCode = subjectCode;
