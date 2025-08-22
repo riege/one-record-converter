@@ -1512,4 +1512,30 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
             .collect(Collectors.toList());
     }
 
+    public static void checkPieceQuantityAgainstItemCount(int pieceQuantityXML, Set<Item> pieceItems) {
+        if (pieceItems == null) {
+            return;
+        }
+        List<Item> itemsWithDims = new ArrayList<>(pieceItems);
+
+        int itemQuantity = 0;
+        for (Item item : itemsWithDims) {
+            if (item.getItemQuantity() != null) {
+                itemQuantity += item.getItemQuantity().getNumericalValue();
+            }
+        }
+        int diff = 0;
+        if (itemQuantity < pieceQuantityXML) {
+            diff = pieceQuantityXML - itemQuantity;
+        }
+
+        if (diff != 0) {
+            Item extra = ONERecordCargoUtil.create(Item.class);
+            Value count = ONERecordCargoUtil.create(Value.class);
+            count.setNumericalValue((double) diff);
+            extra.setItemQuantity(count);
+            pieceItems.add(extra);
+        }
+    }
+
 }
