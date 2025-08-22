@@ -296,7 +296,7 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
 
         VolumetricWeight volumetricWeight = ONERecordCargoUtil.create(VolumetricWeight.class);
         volumetricWeight.setChargeableWeight(mainShipment.getTotalGrossWeight());
-        mainShipment.setVolumetricWeight(ONERecordCargoUtil.buildSet(volumetricWeight));
+        mainShipment.setTotalVolumetricWeight(volumetricWeight);
 
         // totalVolume
         if (xmlMC.getGrossVolumeMeasure() != null) {
