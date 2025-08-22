@@ -998,7 +998,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     private void convertCIMPSegment21() {
         if (xmlMC.getAssociatedConsignmentCustomsProcedure() != null) {
             // As per https://github.com/IATA-Cargo/ONE-Record/issues/135
-            waybill.setCustomsOriginCode(value(xmlMC.getAssociatedConsignmentCustomsProcedure().getGoodsStatusCode()));
+            CodeListElement customsOriginCode = createCodeListElementGeneral(
+                value(xmlMC.getAssociatedConsignmentCustomsProcedure().getGoodsStatusCode()));
+            waybill.setCustomsOriginCode(customsOriginCode);
         }
     }
 
