@@ -192,7 +192,10 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         waybill.setWaybillNumber(value(xmlBH.getID()));
 
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment12:
-        mainShipment.setTotalSLAC(integerValue(xmlHouse.getPackageQuantity()));
+        Set<WaybillLineItem> waybillLineItems = ONERecordCargoUtil.buildSet();
+        waybill.setWaybillLineItems(waybillLineItems);
+        WaybillLineItem firstLineItem = ONERecordCargoUtil.create(WaybillLineItem.class);
+        firstLineItem.setSlacForRate(integerValue(xmlHouse.getPackageQuantity()));
         // HTS:
         List<String> hts = new ArrayList<>();
         List<String> nog = new ArrayList<>();
@@ -212,12 +215,8 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                 }
             }
 
-            if (mainPiece.getProduct() == null) {
-                mainPiece.setProduct(ONERecordCargoUtil.buildSet());
-            }
-
             if (hci.getOriginCountry() != null) {
-                mainPiece.setProductionCountry(
+                mainPiece.setContentProductionCountry(
                     value(hci.getOriginCountry().getID(), null));
             }
 
@@ -234,24 +233,24 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                 dim1R.setLength(value(xmlDim.getLengthMeasure()));
                 dim1R.setWidth(value(xmlDim.getWidthMeasure()));
                 Item item = ONERecordCargoUtil.create(Item.class);
-                // "Product" is mandatory for item as per Ontology
-                item.setProduct(ONERecordCargoUtil.create(Product.class));
                 item.setDimensions(dim1R);
                 item.setWeight(value(lp.getGrossWeightMeasure()));
                 Value count = ONERecordCargoUtil.create(Value.class);
-                count.setValue(Double.valueOf(xmlPackageCount));
-                item.setQuantity(count);
+                count.setNumericalValue((double) xmlPackageCount);
+                item.setItemQuantity(count);
                 allDims.add(item);
             }
 
             UnitLoadTransportEquipmentType xmlULD = hci.getAssociatedUnitLoadTransportEquipment();
             if (xmlULD != null) {
                 ULD uld1R = ONERecordCargoUtil.create(ULD.class);
-                uld1R.setSerialNumber(value(xmlULD.getID()));
+                uld1R.setUldSerialNumber(value(xmlULD.getID()));
                 uld1R.setTareWeight(value(xmlULD.getTareWeightMeasure()));
-                uld1R.setUldTypeCode(value(xmlULD.getCharacteristicCode()));
+                uld1R.setUldTypeCode(createCodeListElementGeneral(
+                    value(xmlULD.getCharacteristicCode())));
                 if (xmlULD.getOperatingParty() != null) {
-                    uld1R.setOwnerCode(value(xmlULD.getOperatingParty().getPrimaryID()));
+                    uld1R.setOwnerCode(createCodeListElementGeneral(
+                        value(xmlULD.getOperatingParty().getPrimaryID())));
                 }
                 allULD.add(uld1R);
             }
@@ -272,8 +271,8 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
             }
             for (String hsCode : hts) {
                 Item item = ONERecordCargoUtil.create(Item.class);
-                item.setProduct(ONERecordCargoUtil.create(Product.class));
-                item.getProduct().setHsCode(hsCode);
+                item.setOfProduct(ONERecordCargoUtil.create(Product.class));
+                item.getOfProduct().setHsCode(createCodeListElementGeneral(hsCode));
                 mainPiece.getContainedItems().add(item);
             }
         }
@@ -286,10 +285,24 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
         }
         // ULDs
         if (!allULD.isEmpty()) {
-            if (mainTransportSegment.getTransportedUlds() == null) {
-                mainTransportSegment.setTransportedUlds(ONERecordCargoUtil.buildSet());
+            for (int i = 0; i < allULD.size(); ++i) {
+                ULD uld = allULD.get(i);
+                if (i == 0) {
+                    firstLineItem.setUldSerialNumber(uld.getUldSerialNumber());
+                    firstLineItem.setUldTareWeightForRate(uld.getTareWeight());
+                    firstLineItem.setUldType(uld.getUldTypeCode());
+                    firstLineItem.setUldOwnerCode(uld.getOwnerCode());
+                    waybill.getWaybillLineItems().add(firstLineItem);
+                }
+                WaybillLineItem lineItem = ONERecordCargoUtil.create(WaybillLineItem.class);
+                lineItem.setUldSerialNumber(uld.getUldSerialNumber());
+                lineItem.setUldTareWeightForRate(uld.getTareWeight());
+                lineItem.setUldType(uld.getUldTypeCode());
+                lineItem.setUldOwnerCode(uld.getOwnerCode());
+                waybill.getWaybillLineItems().add(lineItem);
             }
-            mainTransportSegment.getTransportedUlds().addAll(allULD);
+        } else {
+            waybill.getWaybillLineItems().add(firstLineItem);
         }
         // Nature of Goods
         for (String s : nog) {
