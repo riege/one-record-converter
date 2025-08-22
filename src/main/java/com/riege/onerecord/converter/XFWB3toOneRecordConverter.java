@@ -597,9 +597,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     // *************************************************************************
     private void convertCIMPSegment12() {
         boolean hasRateDescriptions = xmlMC.getApplicableRating() != null
-            && xmlMC.getApplicableRating().size() > 0
+            && !xmlMC.getApplicableRating().isEmpty()
             && xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem() != null
-            && xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem().size() > 0;
+            && !xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem().isEmpty();
         if (!hasRateDescriptions) {
             addError(VG_XMLDATAERROR,
                 "No rate descriptions detected (ApplicableRating/IncludedMasterConsignmentItem)");
@@ -613,19 +613,19 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         // descr.getServiceCode() -> this is unused by Forwarder!
 
         // totalSLAC
+        // In 3.0.0 we are missing the field WaybillLineItem#pieceReference which is only available in 3.1.1 and following
         MasterConsignmentItemType firstMasterConsignmentItem = xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem().get(0);
-        mainShipment.setTotalSLAC(integerValue(firstMasterConsignmentItem.getPackageQuantity()));
+        Set<WaybillLineItem> waybillLineItems = ONERecordCargoUtil.buildSet();
+        waybill.setWaybillLineItems(waybillLineItems);
+        WaybillLineItem firstLineItem = ONERecordCargoUtil.create(WaybillLineItem.class);
+        firstLineItem.setSlacForRate(integerValue(firstMasterConsignmentItem.getPackageQuantity()));
 
         // HTS:
         // loop+collect xmlMC.getApplicableRating().get(0).getIncludedMasterConsignmentItem().get(0).getTypeCode()
         List<String> hts = new ArrayList<>();
-        // Note: avoid using "double" for calculation, we will run into rounding problems
-        BigDecimal rateTotal = BigDecimal.ZERO;
         List<String> nog = new ArrayList<>();
         List<Item> allDims = new ArrayList<>();
         List<ULD> allULD = new ArrayList<>();
-        Ratings mainRateDescription = null;
-        BigDecimal mainRateQuantity = BigDecimal.ZERO;
         for (RatingType rt : xmlMC.getApplicableRating()) {
             for (MasterConsignmentItemType mci : rt.getIncludedMasterConsignmentItem()) {
                 for (CodeType codeType : mci.getTypeCode()) {
@@ -641,12 +641,8 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     }
                 }
 
-                if (mainPiece.getProduct() == null) {
-                    mainPiece.setProduct(ONERecordCargoUtil.buildSet());
-                }
-
                 if (mci.getOriginCountry() != null) {
-                    mainPiece.setProductionCountry(
+                    mainPiece.setContentProductionCountry(
                         value(mci.getOriginCountry().getID(), null));
                 }
 
@@ -663,23 +659,23 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     dim1R.setLength(value(xmlDim.getLengthMeasure()));
                     dim1R.setWidth(value(xmlDim.getWidthMeasure()));
                     Item item = ONERecordCargoUtil.create(Item.class);
-                    // "Product" is mandatory for item as per Ontology
-                    item.setProduct(ONERecordCargoUtil.create(Product.class));
                     item.setDimensions(dim1R);
                     item.setWeight(value(lp.getGrossWeightMeasure()));
                     Value count = ONERecordCargoUtil.create(Value.class);
-                    count.setValue(Double.valueOf(xmlPackageCount));
-                    item.setQuantity(count);
+                    count.setNumericalValue((double) xmlPackageCount);
+                    item.setItemQuantity(count);
                     allDims.add(item);
                 }
 
                 for (UnitLoadTransportEquipmentType xmlULD : mci.getAssociatedUnitLoadTransportEquipment()) {
                     ULD uld1R = ONERecordCargoUtil.create(ULD.class);
-                    uld1R.setSerialNumber(value(xmlULD.getID()));
+                    uld1R.setUldSerialNumber(value(xmlULD.getID()));
                     uld1R.setTareWeight(value(xmlULD.getTareWeightMeasure()));
-                    uld1R.setUldTypeCode(value(xmlULD.getCharacteristicCode()));
+                    uld1R.setUldTypeCode(createCodeListElementGeneral(
+                        value(xmlULD.getCharacteristicCode())));
                     if (xmlULD.getOperatingParty() != null) {
-                        uld1R.setOwnerCode(value(xmlULD.getOperatingParty().getPrimaryID()));
+                        uld1R.setOwnerCode(createCodeListElementGeneral(
+                            value(xmlULD.getOperatingParty().getPrimaryID())));
                     }
                     allULD.add(uld1R);
                 }
@@ -691,66 +687,31 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                 FreightRateServiceChargeType xmlRate = mci.getApplicableFreightRateServiceCharge();
 
                 if (xmlRate != null) {
-                    if (mainRateDescription == null) {
-                        // initialize
-                        mainRateDescription = ONERecordCargoUtil.create(Ratings.class);
-                        // chargeType is unresticted free text in Ontology 1.2
-                        mainRateDescription.setChargeType("Freight");
-                        mainRateDescription.setRanges(ONERecordCargoUtil.buildSet());
-                        mainBooking.setPrice(ONERecordCargoUtil.create(Price.class));
-                        mainBooking.getPrice().setRatings(
-                            ONERecordCargoUtil.buildSet(mainRateDescription));
                         // "Rate class" only fits into "in Ranges/rateClassCode"
                         // The only place where a "Ranges" is available is a "Ratings"
                         // "Ratings" is only available in "Price" or "Request"
                         // Neither "OtherCharges" nor "RateDescriptions" directly belong to a (booking)-Request
                         // Therefore we add them to a Price of the Booking which already exists.
-                    }
+                        // -> Adapted: rateServiceCharge is now mapped to WaybillLineItem
                     // note: it might be a (Q)uantity rate or (M)inimum rate or other!
-                    Ranges rate1R = ONERecordCargoUtil.create(Ranges.class);
-                    rate1R.setRateClassCode(value(xmlRate.getCategoryCode()));
+                    RateClassCode rcc = ONERecordCargoUtil.create(RateClassCode.class);
+                    rcc.setId(Vocabulary.s_c_RateClassCode + "_" + value(xmlRate.getCategoryCode()));
+                    firstLineItem.setRateClassCode(rcc);
                     if (xmlRate.getCommodityItemID() != null) {
-                        Product product = ONERecordCargoUtil.create(Product.class);
-                        product.setCommodityItemNumber(value(xmlRate.getCommodityItemID()));
-                        mainPiece.getProduct().add(product);
+                        firstLineItem.setCommodityItemNumberForRate(value(xmlRate.getCommodityItemID()));
                     }
                     if (xmlRate.getAppliedRate() != null) {
-                        rate1R.setAmount(xmlRate.getAppliedRate().doubleValue());
+                        firstLineItem.setRateCharge(value(xmlRate.getAppliedRate().doubleValue()));
                     }
-
                     if (xmlRate.getChargeableWeightMeasure() != null) {
-                        rate1R.setUnitBasis(unitCode(xmlRate.getChargeableWeightMeasure()));  // wie in Shipment
-                        BigDecimal chargableWeight = bigDecimal(xmlRate.getChargeableWeightMeasure());
-                        /*
-                         * Ontology 2022-May: we no longer use rate1R.setMax/Min
-                         *                    but we use quantity on mainRate!
-                         */
-                        // rate1R.setMaximumQuantity(chargableWeight.doubleValue());
-                        // rate1R.setMinimumQuantity(rate1R.getMaximumQuantity());
-                        mainRateQuantity = mainRateQuantity.add(chargableWeight);
-                        mainRateDescription.setQuantity(mainRateQuantity.toString());
-                    }
-                    if (mci.getSpecifiedRateCombinationPointLocation() != null) {
-                        // IATA considers RCP as deprecated field
-                        // We are not sure about using mainRateDescription.setRcp()
-                        // and supplying all details..
-                        /*
-                        mainRateDescription.setRcp(
-                            value(mci.getSpecifiedRateCombinationPointLocation().getID())
-                        );
-                         */
-                        addWarning(VG_XMLDATAWARNING,
-                            "Rate Construction Points (RCP) is considered deprecated as per IATA 1R and not mapped (ApplicableRating/IncludedMasterConsignmentItem/SpecifiedRateCombinationPointLocation)");
-                        return;
+                        firstLineItem.setChargeableWeightForRate(value(xmlRate.getChargeableWeightMeasure()));
                     }
                     if (xmlRate.getAppliedAmount() != null) {
-                        // the appliedAmount (=rate line total) is not
-                        // stored in 1R, officially it's a
-                        //
-                        rateTotal = rateTotal.add(xmlRate.getAppliedAmount().getValue());
-                        mainRateDescription.setSubTotal(rateTotal.doubleValue());
+                        firstLineItem.setTotal(value(xmlRate.getAppliedAmount(), awbCurrency));
                     }
-                    mainRateDescription.getRanges().add(rate1R);
+                    if (mci.getSpecifiedRateCombinationPointLocation() != null) {
+                        firstLineItem.setRcp(value(mci.getSpecifiedRateCombinationPointLocation().getID()));
+                    }
                 }
             }
         }
@@ -760,8 +721,8 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
             }
             for (String hsCode : hts) {
                 Item item = ONERecordCargoUtil.create(Item.class);
-                item.setProduct(ONERecordCargoUtil.create(Product.class));
-                item.getProduct().setHsCode(hsCode);
+                item.setOfProduct(ONERecordCargoUtil.create(Product.class));
+                item.getOfProduct().setHsCode(createCodeListElementGeneral(hsCode));
                 mainPiece.getContainedItems().add(item);
             }
         }
@@ -774,9 +735,24 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         }
         // ULDs
         if (!allULD.isEmpty()) {
-            for (TransportMovement tm : mainPiece.getTransportMovements()) {
-                tm.setTransportedUlds(ONERecordCargoUtil.buildSet(allULD));
+            for (int i = 0; i < allULD.size(); ++i) {
+                ULD uld = allULD.get(i);
+                if (i == 0) {
+                    firstLineItem.setUldSerialNumber(uld.getUldSerialNumber());
+                    firstLineItem.setUldTareWeightForRate(uld.getTareWeight());
+                    firstLineItem.setUldType(uld.getUldTypeCode());
+                    firstLineItem.setUldOwnerCode(uld.getOwnerCode());
+                    waybill.getWaybillLineItems().add(firstLineItem);
+                }
+                WaybillLineItem lineItem = ONERecordCargoUtil.create(WaybillLineItem.class);
+                lineItem.setUldSerialNumber(uld.getUldSerialNumber());
+                lineItem.setUldTareWeightForRate(uld.getTareWeight());
+                lineItem.setUldType(uld.getUldTypeCode());
+                lineItem.setUldOwnerCode(uld.getOwnerCode());
+                waybill.getWaybillLineItems().add(lineItem);
             }
+        } else {
+            waybill.getWaybillLineItems().add(firstLineItem);
         }
         // Nature of Goods
         for (String s : nog) {
@@ -786,6 +762,9 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                 mainPiece.setGoodsDescription(mainPiece.getGoodsDescription() + "\n" + s);
             }
         }
+
+        int pieceQuantityXML = integerValue(xmlMC.getTotalPieceQuantity());
+        checkPieceQuantityAgainstItemCount(pieceQuantityXML, mainPiece.getContainedItems());
     }
 
     // *************************************************************************
