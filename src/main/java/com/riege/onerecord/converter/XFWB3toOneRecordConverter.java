@@ -569,27 +569,26 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
     // *************************************************************************
     private void convertCIMPSegment11() {
         Insurance insurance = ONERecordCargoUtil.create(Insurance.class);
-        insurance.setNvdIndicator(xmlMC.isNilInsuranceValueIndicator());
+        // If no data, it is considered no value declared
+//        insurance.setNvdIndicator(xmlMC.isNilInsuranceValueIndicator());
         boolean isNilInsurance = xmlMC.isNilInsuranceValueIndicator() != null && xmlMC.isNilInsuranceValueIndicator();
         if (!isNilInsurance) {
-            insurance.setInsuranceAmount(value(xmlMC.getInsuranceValueAmount(), awbCurrency));
+            insurance.setInsuredAmount((value(xmlMC.getInsuranceValueAmount(), awbCurrency)));
         }
         mainShipment.setInsurance(insurance);
 
         mainPiece.setNvdForCarriage(xmlMC.isNilCarriageValueIndicator());
         boolean isNilCarriage = xmlMC.isNilCarriageValueIndicator() != null && xmlMC.isNilCarriageValueIndicator();
         if (!isNilCarriage) {
-            mainPiece.setDeclaredValueForCarriage(
-                xmlMC.getDeclaredValueForCarriageAmount().getValue().toString()
-            );
+            waybill.setDeclaredValueForCarriage(value(
+                xmlMC.getDeclaredValueForCarriageAmount(), awbCurrency));
         }
 
         mainPiece.setNvdForCustoms(xmlMC.isNilCustomsValueIndicator());
         boolean isNilCustoms = xmlMC.isNilCustomsValueIndicator() != null && xmlMC.isNilCustomsValueIndicator();
         if (!isNilCustoms) {
-            mainPiece.setDeclaredValueForCustoms(
-                xmlMC.getDeclaredValueForCustomsAmount().getValue().toString()
-            );
+            waybill.setDeclaredValueForCustoms(value(
+                xmlMC.getDeclaredValueForCustomsAmount(), awbCurrency));
         }
     }
 
