@@ -278,16 +278,16 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
         }
 
         // Add the main carrier, as per AWB prefix
-        // mainAirline.setAirlinePrefix(String.format("%03d", waybill.getWaybillPrefix()));
-        mainAirline.setAirlinePrefix(waybill.getWaybillPrefix());
+        mainAirline.setPrefix(waybill.getWaybillPrefix());
 
         // departure and destination
-        mainBooking.setBookingSegment(ONERecordCargoUtil.create(BookingSegment.class));
-        mainBooking.getBookingSegment().setDepartureLocation(value(xmlMC.getOriginLocation()));
-        mainBooking.getBookingSegment().setArrivalLocation(value(xmlMC.getFinalDestinationLocation()));
+        waybill.setDepartureLocation(value(xmlMC.getOriginLocation()));
+        waybill.setArrivalLocation(value(xmlMC.getFinalDestinationLocation()));
 
         // totalPieceCount
-        mainShipment.setTotalPieceCount(integerValue(xmlMC.getTotalPieceQuantity()));
+        // not available anymore on shipment
+//        mainShipment.setTotalPieceCount(integerValue(xmlMC.getTotalPieceQuantity()));
+        // -> would now be retrievable via sum of mainPiece.containedItems.itemQuantity.numericalValue
 
         // totalGrossWeight
         mainShipment.setTotalGrossWeight(value(xmlMC.getIncludedTareGrossWeightMeasure()));
