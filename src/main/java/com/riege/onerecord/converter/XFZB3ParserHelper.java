@@ -1,9 +1,14 @@
 package com.riege.onerecord.converter;
 
-import java.math.BigDecimal;
+import java.util.Set;
 
+import org.iata.onerecord.cargo.Vocabulary;
+import org.iata.onerecord.cargo.model.CodeListElement;
 import org.iata.onerecord.cargo.model.Country;
+import org.iata.onerecord.cargo.model.CurrencyCode;
+import org.iata.onerecord.cargo.model.CurrencyValue;
 import org.iata.onerecord.cargo.model.Location;
+import org.iata.onerecord.cargo.model.MeasurementUnitCode;
 import org.iata.onerecord.cargo.model.Value;
 import org.iata.onerecord.cargo.util.ONERecordCargoUtil;
 
@@ -41,37 +46,33 @@ public class XFZB3ParserHelper {
     }
 
     public static Value value(MeasureType measure) {
-        if (measure == null || measure.getValue() == null) {
+        if (measure == null || measure.getValue() == null || measure.getUnitCode() == null) {
             return null;
         }
         Value result = ONERecordCargoUtil.create(Value.class);
-        result.setUnit(measure.getUnitCode());
-        result.setValue(measure.getValue().doubleValue());
+        MeasurementUnitCode muc = ONERecordCargoUtil.create(MeasurementUnitCode.class);
+        muc.setId(Vocabulary.s_c_MeasurementUnitCode + "_" + measure.getUnitCode());
+        result.setUnit(muc);
+        result.setNumericalValue(measure.getValue().doubleValue());
         return result;
     }
 
-    public static BigDecimal bigDecimal(MeasureType weightMeasure) {
-        return weightMeasure == null ? null : weightMeasure.getValue();
-    }
-
-    public static String unitCode(MeasureType measure) {
-        if (measure == null || measure.getUnitCode() == null) {
-            return null;
-        }
-        return measure.getUnitCode();
-    }
-
     public static Integer integerValue(QuantityType quantity) {
-        return quantity != null && quantity.getValue() != null ? Integer.valueOf(quantity.getValue().intValue()) : null;
+        return quantity != null && quantity.getValue() != null ? quantity.getValue().intValue()
+            : null;
     }
 
-    public static Value value(AmountType measure, String defaultCurrency) {
+    public static CurrencyValue value(AmountType measure, String defaultCurrency) {
         if (measure == null) {
             return null;
         }
-        Value result = ONERecordCargoUtil.create(Value.class);
-        result.setUnit(measure.getCurrencyID() == null ? defaultCurrency : measure.getCurrencyID().value());
-        result.setValue(measure.getValue().doubleValue());
+        CurrencyValue result = ONERecordCargoUtil.create(CurrencyValue.class);
+        CurrencyCode currencyCode = ONERecordCargoUtil.create(CurrencyCode.class);
+        currencyCode.setId(Vocabulary.s_c_CurrencyCode + "_" + (measure.getCurrencyID() == null
+            ? defaultCurrency
+            : measure.getCurrencyID().value()));
+        result.setCurrencyUnit(currencyCode);
+        result.setNumericalValue(measure.getValue().doubleValue());
         return result;
     }
 
@@ -110,7 +111,8 @@ public class XFZB3ParserHelper {
             return null;
         }
         Location location = ONERecordCargoUtil.create(Location.class);
-        location.setCode(value(locationCode));
+        Set<CodeListElement> locationCodes = ONERecordCargoUtil.buildSet(createCodeListElementGeneral(value(locationCode)));
+        location.setLocationCodes(locationCodes);
         location.setLocationType(value(typeCode));
         location.setLocationName(value(locationName));
         return location;
@@ -132,6 +134,12 @@ public class XFZB3ParserHelper {
 
     public static String value(ISO3AlphaCurrencyCodeContentType currencyCodeType) {
         return currencyCodeType == null ? null : currencyCodeType.value();
+    }
+
+    public static CodeListElement createCodeListElementGeneral(String code) {
+        CodeListElement cle = ONERecordCargoUtil.create(CodeListElement.class);
+        cle.setCode(code);
+        return cle;
     }
 
 }
