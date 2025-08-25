@@ -2,23 +2,34 @@ package com.riege.onerecord.converter;
 
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBException;
 
 import org.iata.onerecord.cargo.Vocabulary;
 import org.iata.onerecord.cargo.codelists.WaybillTypeCode;
+import org.iata.onerecord.cargo.model.Item;
+import org.iata.onerecord.cargo.model.Piece;
+import org.iata.onerecord.cargo.model.Waybill;
+import org.iata.onerecord.cargo.model.WaybillLineItem;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
 
 import com.riege.cargoxml.schema.xfzb3.HouseWaybillType;
+import com.riege.cargoxml.schema.xfzb3.QuantityType;
 import com.riege.onerecord.jsonutils.JacksonObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static com.riege.onerecord.converter.XFZB3ParserHelper.*;
 
 public class XFZB3toOneRecordConverterTest {
 
@@ -112,16 +123,62 @@ public class XFZB3toOneRecordConverterTest {
 
         assertEquals(200,
             (Integer) JsonPath.read(result.json, "$.waybillLineItems[0].slacForRate"));
-//        assertTrue(result.json.contains("PieceCount\" : 10"));
+
+        assertEquals(10.0, JsonPath.read(result.json,
+            "$.shipment.pieces[0].containedItems[1].itemQuantity.numericalValue"));
 
         // Some more
         assertEquals("1133557799", JsonPath.read(result.json,
             "$.shipment.pieces[0].containedItems[0].ofProduct.hsCode.code"));
     }
 
+    @Test
+    public void testPieceQuantityOnExtraItemAndSlac()
+        throws JAXBException, JsonProcessingException
+    {
+        Result result = fileProcessingTest("SEL22222222_XFZB.xml");
+        Waybill oneRecordResult = result.converter.getOneRecordResult();
+        Set<Piece> pieces = oneRecordResult.getShipment().getPieces();
+        Optional<Piece> first = pieces.stream().findFirst();
+        Piece mainPiece = null;
+        if (first.isPresent()) {
+            mainPiece = first.get();
+        }
+        assertNotNull(mainPiece);
+        List<Item> items = mainPiece.getContainedItems().stream()
+            .filter(i -> i.getItemQuantity() != null)
+            .collect(Collectors.toList());
+
+        HouseWaybillType cxmlHouseWaybill = getCXMLHouseWaybill("SEL22222222_XFZB.xml");
+        QuantityType totalPieceQuantity =
+            cxmlHouseWaybill.getMasterConsignment().getIncludedHouseConsignment().getTotalPieceQuantity();
+        int totalPieceQuantityXML = integerValue(totalPieceQuantity);
+        int itemQuantity = 0;
+        for (Item item : items) {
+            itemQuantity += item.getItemQuantity().getNumericalValue();
+        }
+        // extra Item with itemQuantity = 10 should have been created since totalPieceQuantity in houseConsignment
+        // was 10, and we have no initial items with dims from TransportLogisticsPackage in CXML
+        assertEquals(itemQuantity, totalPieceQuantityXML);
+
+        //Assert slac on waybillLineItem
+        QuantityType packageQuantity =
+            cxmlHouseWaybill.getMasterConsignment().getIncludedHouseConsignment()
+                .getPackageQuantity();
+        int packageQuantityXML = integerValue(packageQuantity);
+        Optional<WaybillLineItem> waybillLineItem =
+            oneRecordResult.getWaybillLineItems().stream().findFirst();
+        WaybillLineItem firstLineItem = null;
+        if (waybillLineItem.isPresent()) {
+            firstLineItem = waybillLineItem.get();
+        }
+        assertNotNull(firstLineItem);
+        assertEquals(firstLineItem.getSlacForRate(), packageQuantityXML);
+
+    }
+
     private Result fileProcessingTest(String filename) throws JAXBException, JsonProcessingException {
-        InputStream is = ClassLoader.getSystemResourceAsStream(filename);
-        HouseWaybillType xfzb = new ConverterUtil().unmarshallXFZB3(is);
+        HouseWaybillType xfzb = getCXMLHouseWaybill(filename);
         Result result = new Result();
         result.awb = xfzb.getBusinessHeaderDocument().getID().getValue();
         result.converter = new XFZB3toOneRecordConverter(xfzb);
@@ -132,6 +189,11 @@ public class XFZB3toOneRecordConverterTest {
                 .writeValueAsString(object);
         assertNotNull(result.json);
         return result;
+    }
+
+    private HouseWaybillType getCXMLHouseWaybill(String filename) throws JAXBException {
+        InputStream is = ClassLoader.getSystemResourceAsStream(filename);
+        return new ConverterUtil().unmarshallXFZB3(is);
     }
 
 }
