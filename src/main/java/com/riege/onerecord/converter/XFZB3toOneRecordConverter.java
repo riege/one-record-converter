@@ -293,6 +293,7 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
                     firstLineItem.setUldType(uld.getUldTypeCode());
                     firstLineItem.setUldOwnerCode(uld.getOwnerCode());
                     waybill.getWaybillLineItems().add(firstLineItem);
+                    continue;
                 }
                 WaybillLineItem lineItem = ONERecordCargoUtil.create(WaybillLineItem.class);
                 lineItem.setUldSerialNumber(uld.getUldSerialNumber());
