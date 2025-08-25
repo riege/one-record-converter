@@ -312,6 +312,53 @@ public class XFWB3toOneRecordConverterTest {
         assertEquals(itemQuantity, totalPieceQuantityXML);
     }
 
+    @Test
+    public void test88811111111_XFWB_multipleULD_multipleHTS()
+        throws JAXBException, JsonProcessingException
+    {
+        Result result = fileProcessingTest("888-11111111_XFWB_multipleULD_multipleHTS.xml");
+        // Items
+        // 2 items for HTS + 2 from LogisticsPackage with dims
+        assertEquals(4, (Integer) JsonPath.read(result.json,
+            "$.shipment.pieces[0].containedItems.length()"));
+
+        assertEquals("000111", JsonPath.read(result.json,
+            "$.shipment.pieces[0].containedItems[0].ofProduct.hsCode.code"));
+
+        assertEquals("000222", JsonPath.read(result.json,
+            "$.shipment.pieces[0].containedItems[1].ofProduct.hsCode.code"));
+
+        // WaybillLineItems
+        assertEquals(2, (Integer) JsonPath.read(result.json,
+            "$.waybillLineItems.length()"));
+
+        // 1st waybillLineItem with info from <ApplicableFreightRateServiceCharge> + slac + first ULD
+        assertEquals(1042.0, JsonPath.read(result.json,
+            "$.waybillLineItems[0].chargeableWeightForRate.numericalValue"));
+
+        assertEquals(4.44, JsonPath.read(result.json,
+            "$.waybillLineItems[0].rateCharge.numericalValue"));
+
+        assertEquals(4626.48, JsonPath.read(result.json,
+            "$.waybillLineItems[0].total.numericalValue"));
+
+        assertEquals(333, (Integer) JsonPath.read(result.json,
+            "$.waybillLineItems[0].slacForRate"));
+
+        assertEquals("PMC", JsonPath.read(result.json,
+            "$.waybillLineItems[0].uldType.code"));
+
+        assertEquals("1337", JsonPath.read(result.json,
+            "$.waybillLineItems[0].uldSerialNumber"));
+
+        // 2nd waybillLineItem with info for 2nd ULD
+        assertEquals("AKE", JsonPath.read(result.json,
+            "$.waybillLineItems[1].uldType.code"));
+
+        assertEquals("4711", JsonPath.read(result.json,
+            "$.waybillLineItems[1].uldSerialNumber"));
+    }
+
     private Result fileProcessingTest(String filename) throws JAXBException, JsonProcessingException {
         WaybillType xfwb = getCXMLWaybill(filename);
         Result result = new Result();
