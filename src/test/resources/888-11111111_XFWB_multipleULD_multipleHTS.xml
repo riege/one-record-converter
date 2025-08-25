@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Example XFWB with 2 ULDs and 2 HTS codes -->
+<!-- ULD codes are PMC1337XX and AKE4711XX    -->
+<!--     search for 'PMC' or 'AKE' to find    -->
+<!-- HTS codes are 000111 and 000222          -->
+<ns2:Waybill xmlns="iata:datamodel:3" xmlns:ns6="urn:un:unece:uncefact:codelist:standard:IANA:MIMEMediaType:2009-09-01" xmlns:ns5="urn:un:unece:uncefact:codelist:standard:UNECE:TransportModeCode:2" xmlns:ns8="urn:un:unece:uncefact:codelist:standard:6:Recommendation20:6" xmlns:ns7="urn:un:unece:uncefact:codelist:standard:6:0133:40106" xmlns:ns9="urn:un:unece:uncefact:codelist:standard:UNECE:DocumentNameCode:D09A" xmlns:ns12="urn:un:unece:uncefact:codelist:standard:5:ISO42173A:2009-09-09" xmlns:ns11="urn:un:unece:uncefact:identifierlist:standard:5:ISO316612A:SecondEdition2006VI-6" xmlns:ns10="urn:un:unece:uncefact:codelist:standard:6:3055:D09A" xmlns:ns2="iata:waybill:1" xmlns:ns4="urn:un:unece:uncefact:codelist:standard:IANA:CharacterSetCode:2007-05-14" xmlns:ns3="urn:un:unece:uncefact:codelist:standard:UNECE:PartyRoleCode:D09A">
+    <ns2:MessageHeaderDocument>
+        <ID>888-11111111_6c763819-1067-43fe-acf7-db4daf4f77cf</ID>
+        <Name>Master Air Waybill</Name>
+        <TypeCode>741</TypeCode>
+        <IssueDateTime>2021-03-10T11:00:00+01:00</IssueDateTime>
+        <PurposeCode>Creation</PurposeCode>
+        <VersionID>3.00</VersionID>
+        <SenderParty>
+            <PrimaryID schemeID="C">RIEGESOFTWARE</PrimaryID>
+        </SenderParty>
+        <SenderParty>
+            <PrimaryID schemeID="P">REUAGT88FORWARDER/FRA01</PrimaryID>
+        </SenderParty>
+        <RecipientParty>
+            <PrimaryID schemeID="C">CCSPROVIDERNAME</PrimaryID>
+        </RecipientParty>
+    </ns2:MessageHeaderDocument>
+    <ns2:BusinessHeaderDocument>
+        <ID>888-11111111</ID>
+        <SenderAssignedID>FRA8117142550</SenderAssignedID>
+        <IncludedHeaderNote>
+            <ContentCode>C</ContentCode>
+            <Content>Consolidation Shipment</Content>
+        </IncludedHeaderNote>
+        <SignatoryCarrierAuthentication>
+            <ActualDateTime>2021-03-10T00:00:00</ActualDateTime>
+            <Signatory>MARK USER</Signatory>
+            <IssueAuthenticationLocation>
+                <Name>ORK</Name>
+            </IssueAuthenticationLocation>
+        </SignatoryCarrierAuthentication>
+    </ns2:BusinessHeaderDocument>
+    <ns2:MasterConsignment>
+        <ID>8112345678</ID>
+        <NilCarriageValueIndicator>true</NilCarriageValueIndicator>
+        <NilCustomsValueIndicator>true</NilCustomsValueIndicator>
+        <NilInsuranceValueIndicator>true</NilInsuranceValueIndicator>
+        <TotalChargePrepaidIndicator>true</TotalChargePrepaidIndicator>
+        <TotalDisbursementPrepaidIndicator>true</TotalDisbursementPrepaidIndicator>
+        <IncludedTareGrossWeightMeasure unitCode="KGM">1042.0</IncludedTareGrossWeightMeasure>
+        <GrossVolumeMeasure unitCode="MTQ">2.602</GrossVolumeMeasure>
+        <TotalPieceQuantity>3</TotalPieceQuantity>
+        <ConsignorParty>
+            <Name>FORWARDER COMPANY IRELAND LTD</Name>
+            <AccountID>SHP_ACCOUNT_NO_1234</AccountID>
+            <PostalStructuredAddress>
+                <PostcodeCode>ABCD</PostcodeCode>
+                <StreetName>HARBOUR POINT BUSINESS PARK</StreetName>
+                <CityName>LITTLE CITY</CityName>
+                <CountryID>IE</CountryID>
+            </PostalStructuredAddress>
+            <DefinedTradeContact>
+                <DirectTelephoneCommunication>
+                    <CompleteNumber>353123456789</CompleteNumber>
+                </DirectTelephoneCommunication>
+            </DefinedTradeContact>
+        </ConsignorParty>
+        <ConsigneeParty>
+            <Name>FORWARDER COMPANY SHANGHAI LTD
+ROOM 123 SPECIAL BUILDING. NR 987</Name>
+            <PostalStructuredAddress>
+                <StreetName>SUHANG RD. PUDONG AIRPORT
+AIRPORT ROAD</StreetName>
+                <CityName>SHANGHAI</CityName>
+                <CountryID>CN</CountryID>
+                <CountryName>People's Republic of China</CountryName>
+            </PostalStructuredAddress>
+            <DefinedTradeContact>
+                <DirectTelephoneCommunication>
+                    <CompleteNumber>861234567890</CompleteNumber>
+                </DirectTelephoneCommunication>
+            </DefinedTradeContact>
+        </ConsigneeParty>
+        <FreightForwarderParty>
+            <Name>FORWARDER COMPANY IRELAND LIMITED</Name>
+            <AccountID>87654321</AccountID>
+            <CargoAgentID>3456789</CargoAgentID>
+            <FreightForwarderAddress>
+                <PostcodeCode>ABCD</PostcodeCode>
+                <StreetName>Harbour Point Business Part</StreetName>
+                <CityName>Little City</CityName>
+                <CountryID>IE</CountryID>
+            </FreightForwarderAddress>
+            <SpecifiedCargoAgentLocation>
+                <ID>0123</ID>
+            </SpecifiedCargoAgentLocation>
+            <DefinedTradeContact>
+                <DirectTelephoneCommunication>
+                    <CompleteNumber>353987654321</CompleteNumber>
+                </DirectTelephoneCommunication>
+            </DefinedTradeContact>
+        </FreightForwarderParty>
+        <OriginLocation>
+            <ID>ORK</ID>
+        </OriginLocation>
+        <FinalDestinationLocation>
+            <ID>PVG</ID>
+        </FinalDestinationLocation>
+        <SpecifiedLogisticsTransportMovement>
+            <StageCode>Main-Carriage</StageCode>
+            <ModeCode>4</ModeCode>
+            <Mode>Air transport</Mode>
+            <ID>XX8012</ID>
+            <SequenceNumeric>1</SequenceNumeric>
+            <UsedLogisticsTransportMeans>
+                <Name>XX</Name>
+            </UsedLogisticsTransportMeans>
+            <ArrivalEvent>
+                <OccurrenceArrivalLocation>
+                    <ID>DUB</ID>
+                    <TypeCode>Airport</TypeCode>
+                </OccurrenceArrivalLocation>
+            </ArrivalEvent>
+            <DepartureEvent>
+                <ScheduledOccurrenceDateTime>2021-03-10T00:00:00</ScheduledOccurrenceDateTime>
+                <OccurrenceDepartureLocation>
+                    <ID>ORK</ID>
+                    <TypeCode>Airport</TypeCode>
+                </OccurrenceDepartureLocation>
+            </DepartureEvent>
+        </SpecifiedLogisticsTransportMovement>
+        <SpecifiedLogisticsTransportMovement>
+            <StageCode>Main-Carriage</StageCode>
+            <ModeCode>4</ModeCode>
+            <Mode>Air transport</Mode>
+            <ID>XX345</ID>
+            <SequenceNumeric>2</SequenceNumeric>
+            <UsedLogisticsTransportMeans>
+                <Name>XX</Name>
+            </UsedLogisticsTransportMeans>
+            <ArrivalEvent>
+                <OccurrenceArrivalLocation>
+                    <ID>AUH</ID>
+                    <TypeCode>Airport</TypeCode>
+                </OccurrenceArrivalLocation>
+            </ArrivalEvent>
+            <DepartureEvent>
+                <ScheduledOccurrenceDateTime>2021-03-12T00:00:00</ScheduledOccurrenceDateTime>
+                <OccurrenceDepartureLocation>
+                    <ID>DUB</ID>
+                    <TypeCode>Airport</TypeCode>
+                </OccurrenceDepartureLocation>
+            </DepartureEvent>
+        </SpecifiedLogisticsTransportMovement>
+        <HandlingSPHInstructions>
+            <DescriptionCode>NSC</DescriptionCode>
+        </HandlingSPHInstructions>
+        <HandlingOSIInstructions>
+            <Description>4 PALLETS</Description>
+        </HandlingOSIInstructions>
+        <HandlingOSIInstructions>
+            <Description>TEMPERATURE CONTROL 15 TO 25 DEGREES CELSIUS</Description>
+        </HandlingOSIInstructions>
+        <HandlingOSIInstructions>
+            <Description>HANDLE WITH CARE</Description>
+        </HandlingOSIInstructions>
+        <IncludedCustomsNote>
+            <ContentCode>T</ContentCode>
+            <Content>IE1234567N</Content>
+            <SubjectCode>SHP</SubjectCode>
+            <CountryID>IE</CountryID>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>CP</ContentCode>
+            <Content>HILDA HILARIOUS</Content>
+            <SubjectCode>SHP</SubjectCode>
+            <CountryID>IE</CountryID>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>T</ContentCode>
+            <Content>USCI1234567812345678X7</Content>
+            <SubjectCode>CNE</SubjectCode>
+            <CountryID>CN</CountryID>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>CP</ContentCode>
+            <Content>PAUL PERSON</Content>
+            <SubjectCode>CNE</SubjectCode>
+            <CountryID>CN</CountryID>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>CT</ContentCode>
+            <Content>862123454321</Content>
+            <SubjectCode>CNE</SubjectCode>
+            <CountryID>CN</CountryID>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>RA</ContentCode>
+            <Content>01234-01</Content>
+            <SubjectCode>ISS</SubjectCode>
+            <CountryID>IE</CountryID>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>ED</ContentCode>
+            <Content>1299</Content>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>SN</ContentCode>
+            <Content>MR. SECURITY OFFICER</Content>
+        </IncludedCustomsNote>
+        <IncludedCustomsNote>
+            <ContentCode>SD</ContentCode>
+            <Content>13APR211147</Content>
+        </IncludedCustomsNote>
+        <AssociatedConsignmentCustomsProcedure>
+            <GoodsStatusCode>X</GoodsStatusCode>
+        </AssociatedConsignmentCustomsProcedure>
+        <ApplicableOriginCurrencyExchange>
+            <SourceCurrencyCode>EUR</SourceCurrencyCode>
+        </ApplicableOriginCurrencyExchange>
+        <ApplicableLogisticsServiceCharge/>
+        <ApplicableLogisticsAllowanceCharge>
+            <ID>MC</ID>
+            <PrepaidIndicator>true</PrepaidIndicator>
+            <PartyTypeCode>C</PartyTypeCode>
+            <ActualAmount currencyID="EUR">1234.56</ActualAmount>
+        </ApplicableLogisticsAllowanceCharge>
+        <ApplicableRating>
+            <TypeCode>F</TypeCode>
+            <ConsignmentItemQuantity>1</ConsignmentItemQuantity>
+            <IncludedMasterConsignmentItem>
+                <SequenceNumeric>1</SequenceNumeric>
+                <TypeCode>000111</TypeCode>
+                <GrossWeightMeasure unitCode="KGM">1042.0</GrossWeightMeasure>
+                <GrossVolumeMeasure unitCode="CMQ">2602000</GrossVolumeMeasure>
+                <PackageQuantity>333</PackageQuantity>
+                <PieceQuantity>3</PieceQuantity>
+                <NatureIdentificationTransportCargo>
+                    <Identification>CONSOLIDATION
+AS PER ATTACHED
+MANIFEST
+SECURE CARGO
+NOT RESTRICTED
+AIRLINE PHARMA
+SERVICE</Identification>
+                </NatureIdentificationTransportCargo>
+                <AssociatedUnitLoadTransportEquipment>
+                    <ID>1337</ID>
+                    <CharacteristicCode>PMC</CharacteristicCode>
+                    <OperatingParty>
+                        <PrimaryID>XX</PrimaryID>
+                    </OperatingParty>
+                </AssociatedUnitLoadTransportEquipment>
+                <AssociatedUnitLoadTransportEquipment>
+                    <ID>4711</ID>
+                    <CharacteristicCode>AKE</CharacteristicCode>
+                    <OperatingParty>
+                        <PrimaryID>XX</PrimaryID>
+                    </OperatingParty>
+                </AssociatedUnitLoadTransportEquipment>
+                <TransportLogisticsPackage>
+                    <ItemQuantity>2</ItemQuantity>
+                    <LinearSpatialDimension>
+                        <WidthMeasure unitCode="CMT">80</WidthMeasure>
+                        <LengthMeasure unitCode="CMT">120</LengthMeasure>
+                        <HeightMeasure unitCode="CMT">96</HeightMeasure>
+                    </LinearSpatialDimension>
+                </TransportLogisticsPackage>
+                <TransportLogisticsPackage>
+                    <ItemQuantity>1</ItemQuantity>
+                    <LinearSpatialDimension>
+                        <WidthMeasure unitCode="CMT">80</WidthMeasure>
+                        <LengthMeasure unitCode="CMT">120</LengthMeasure>
+                        <HeightMeasure unitCode="CMT">79</HeightMeasure>
+                    </LinearSpatialDimension>
+                </TransportLogisticsPackage>
+                <ApplicableFreightRateServiceCharge>
+                    <CategoryCode>Q</CategoryCode>
+                    <ChargeableWeightMeasure unitCode="KGM">1042.0</ChargeableWeightMeasure>
+                    <AppliedRate>4.44</AppliedRate>
+                    <AppliedAmount currencyID="EUR">4626.48</AppliedAmount>
+                </ApplicableFreightRateServiceCharge>
+            </IncludedMasterConsignmentItem>
+            <IncludedMasterConsignmentItem>
+                <SequenceNumeric>2</SequenceNumeric>
+                <TypeCode>000222</TypeCode>
+                <Information>NDA</Information>
+            </IncludedMasterConsignmentItem>
+        </ApplicableRating>
+        <ApplicableTotalRating>
+            <TypeCode>F</TypeCode>
+            <ApplicablePrepaidCollectMonetarySummation>
+                <PrepaidIndicator>true</PrepaidIndicator>
+                <WeightChargeTotalAmount currencyID="EUR">4626.48</WeightChargeTotalAmount>
+                <TaxTotalAmount currencyID="EUR">11.22</TaxTotalAmount>
+                <CarrierTotalDuePayableAmount currencyID="EUR">222.33</CarrierTotalDuePayableAmount>
+                <GrandTotalAmount currencyID="EUR">4860.03</GrandTotalAmount>
+            </ApplicablePrepaidCollectMonetarySummation>
+        </ApplicableTotalRating>
+    </ns2:MasterConsignment>
+</ns2:Waybill>

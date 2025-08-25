@@ -180,9 +180,8 @@ public class XFWB3ParserHelper {
     }
 
     public static String determineModeQualifierIRI(String modeQualifier) {
-        String cclModeQualifierBaseIRI = "https://onerecord.iata.org/ns/cargo#";
         String modeQualifierAdapted = modeQualifier.toUpperCase(Locale.ENGLISH).replace("-", "_");
-        return cclModeQualifierBaseIRI + modeQualifierAdapted;
+        return Vocabulary.ONTOLOGY_IRI_cargo + "#" + modeQualifierAdapted;
     }
 
     public static String determinePartyRoleCodeIRI(String partyRoleCode) {
