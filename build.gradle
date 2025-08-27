@@ -44,7 +44,7 @@ ext {
     implDescription      = implVendor + ' ' + product + ' Java Library'
     specVersion          = '1.1'
     implVersion          = version
-    javaTarget           = JavaVersion.VERSION_1_8
+    javaTarget           = JavaVersion.VERSION_11
 }
 
 group 'com.riege'
@@ -54,6 +54,10 @@ targetCompatibility = javaTarget
 java {
     withSourcesJar()    // to get a "sourcesJar" task
     withJavadocJar()    // to get a "javadocJar" task
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
 }
 
 tasks.withType(Jar) {
@@ -94,7 +98,7 @@ dependencies {
     // github/riege internal dependency:
     //     implementation('com.riege:one-record-ontologymodel:2.0.1') { transitive = false }
 
-    implementation('com.github.riege:one-record-ontologydatamodel:0.2.5')
+    implementation('com.github.riege:one-record-ontologydatamodel:3.0.0000')
     implementation('com.github.riege:one-record-jsonutils:0.9.5')
 
     // cargoxml-jaxb from riege.com cannot be retrieved via https://jitpack.io
@@ -106,6 +110,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testImplementation "com.jayway.jsonpath:json-path:2.9.0"
 }
 
 test {
