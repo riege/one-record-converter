@@ -56,6 +56,10 @@ java {
     withJavadocJar()    // to get a "javadocJar" task
 }
 
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
 tasks.withType(Jar) {
     manifest {
         attributes(
