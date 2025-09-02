@@ -34,7 +34,7 @@ public abstract class CargoXMLtoOneRecordConverter<T extends LogisticsObject> {
         // General Hints
         addHint(VG_GENERAL, "This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.");
         addHint(VG_GENERAL, "This converter is based on the schema from IATA CargoXML Toolkit 8th Edition.");
-        addHint(VG_GENERAL, "This converter is based on ONE RECORD datamodel Ontology 2.1, see https://github.com/IATA-Cargo/ONE-Record/tree/master/December-2022-standard");
+        addHint(VG_GENERAL, "This converter is based on ONE RECORD datamodel Ontology 3.0, see https://github.com/IATA-Cargo/ONE-Record/tree/master/2023-12-standard");
         addHint(VG_GENERAL, "Codes and units are applied 1:1 from CargoXML where applicable.");
         addHint(VG_GENERAL, "Line breaks are respected for some fields if provided in XML, e.g. for multi-line goods description or address name/street");
         addHint(VG_GENERAL, "Line breaks are intentionally added in 'goodsDescription' and 'accountingInformation' to preserve and indicate descriptions from more than one field if applicaple from original XML");
