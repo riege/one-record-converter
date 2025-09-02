@@ -3,22 +3,23 @@ Note: A live demo of this converter is available at https://onerecord.riege.com/
 
 ## Release versioning and IATA Ontology versions
 
-The IATA Ontology version is reflected by the version of the Riege [one-record-ontologymodel library](https://github.com/riege/one-record-ontologymodel).
+The IATA Ontology version is reflected by the version of the Riege [one-record-ontologydatamodel library](https://github.com/riege/one-record-ontologydatamodel).
 
-It is highly recommended to use converter library 2.1 / Ontology version 2.1 or younger for 
-converting XFWB or XFZB to ONE Record. Note IATA Ontology version 2.0 added major improvements for 
+It is highly recommended to use converter library 3.0 / Ontology version 3.0 or younger for 
+converting XFWB or XFZB to ONE Record. Note IATA Ontology version 3.0 added major improvements for 
 eAWB data fields.
 
 Versions of the converter library:
-* 2.1.x / `branch_2.1`: based upon IATA Ontology 2.1, the ONE Record datamodel as per December 2022, see https://github.com/IATA-Cargo/ONE-Record/tree/master/December-2022-standard
+* 3.0.x / `branch_3.0`: based upon IATA Ontology 3.0, the ONE Record datamodel as per December 2023, see https://github.com/IATA-Cargo/ONE-Record/tree/master/2023-12-standard
+* 2.1.x / `branch_2.1`: based upon IATA Ontology 2.1, the ONE Record datamodel as per December 2022, see https://github.com/IATA-Cargo/ONE-Record/tree/master/2022-12-standard
   <br>Uses one-record-ontologydatamodel version **0.2.x**
-* 1.0.x / `branch_1.0`: based upon IATA Ontology 2.0, the ONE Record datamodel as per May 2022, see https://github.com/IATA-Cargo/ONE-Record/tree/master/May-2022-standard-COTB-endorsed.
+* 1.0.x / `branch_1.0`: based upon IATA Ontology 2.0, the ONE Record datamodel as per May 2022, see https://github.com/IATA-Cargo/ONE-Record/tree/master/2022-05-standard
   <br>Uses one-record-ontologymodel version **2.0.x**
-* 0.9.x / `branch_0.9`: based upon IATA Ontology 1.1, the ONE Record datamodel as per June 2021, see https://github.com/IATA-Cargo/ONE-Record/tree/master/June-2021-standard-COTB-endorsed.
+* 0.9.x / `branch_0.9`: based upon IATA Ontology 1.1, the ONE Record datamodel as per June 2021, see https://github.com/IATA-Cargo/ONE-Record/tree/master/2021-06-standard
   <br>Uses one-record-ontologymodel version **1.1.x**
 * current development / `main`: based on IATA ONE Record datamodel working draft, see https://github.com/IATA-Cargo/ONE-Record/tree/master/working_draft/ontology
 
-## General Backgound Information
+## General Background Information
 This converter intentionally does neither set IDs nor makes use of persisted data for linked-data purposes.
 
 The converter is based on two main data structures to convert from Cargo-XML to ONE Record:
