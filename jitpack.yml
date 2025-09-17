@@ -1,0 +1,8 @@
+# Update to JDK 11 for JitPack on demand building
+jdK:
+  - openjdk11
+
+before_install:
+  - sdk install java 11.0.28-tem
+  - sdk use java 11.0.28-tem
+  - sdk install maven
