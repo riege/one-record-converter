@@ -621,12 +621,12 @@ public class XFZB3toOneRecordConverter extends CargoXMLtoOneRecordConverter<Wayb
     // *************************************************************************
     private void convertCIMPSegment09() {
         if (xmlHouse.getTotalPrepaidChargeAmount() != null) {
-            addWarning(VG_UNCERTAINTY,
-                "Unclear where to put <IncludedHouseConsignment><TotalPrepaidChargeAmount>");
+            addWarning(VG_INFORMATION,
+                "<IncludedHouseConsignment><TotalPrepaidChargeAmount> is not available as field in OneRecord, but intended to be calculated as sum over all prepaid charge amounts");
         }
         if (xmlHouse.getTotalCollectChargeAmount() != null) {
-            addWarning(VG_UNCERTAINTY,
-                "Unclear where to put <IncludedHouseConsignment><TotalCollectChargeAmount>");
+            addWarning(VG_INFORMATION,
+                "<IncludedHouseConsignment><TotalCollectChargeAmount> is not available as field in OneRecord, but intended to be calculated as sum over all collect charge amounts");
         }
 
         // Copied from XFWB3toOneRecordConverter#convertCIMPSegment11:
