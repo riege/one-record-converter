@@ -680,10 +680,6 @@ public final class XFWB3toOneRecordConverter extends CargoXMLtoOneRecordConverte
                     allULD.add(uld1R);
                 }
 
-                if (hasElements(mci.getAssociatedUnitLoadTransportEquipment())) {
-                    addWarning(VG_UNIMPLEMENTED,
-                        "Mapping for ApplicableRating/MasterConsignmentItem/AssociatedUnitLoadTransportEquipment is not implemented yet");
-                }
                 FreightRateServiceChargeType xmlRate = mci.getApplicableFreightRateServiceCharge();
 
                 if (xmlRate != null) {
