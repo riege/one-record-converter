@@ -36,8 +36,10 @@ The converter is based on two main data structures to convert from Cargo-XML to 
 * For generating ONE Record Logistics Object structures, IATA provides Java classes 
   in project https://github.com/IATA-Cargo/one-record-server-java 
   (see https://github.com/IATA-Cargo/one-record-server-java/tree/master/src/main/generated-sources/org/iata/cargo).
-  These classes have been updated with recently IATA endorsed Ontology via the project 
-  https://github.com/riege/one-record-ontologymodel which is used by this converter.
+  <br>Riege updated these classes with IATA endorsed Ontology up to datamodel 2.0 via the project 
+  https://github.com/riege/one-record-ontologymodel and since datamodel 2.1 via
+  https://github.com/riege/one-record-ontologydatamodel which is used by the current version
+  of this converter.
 
 Codes and units are copied 1:1 from the provided Cargo-XML message where applicable.
 
